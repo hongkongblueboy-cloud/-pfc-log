@@ -330,6 +330,13 @@
     <input type="file" id="backup-file" accept=".json,application/json" style="display:none">
     <div class="backup-note" id="backup-note">記録とKPIをJSONファイルとして保存/復元できます。</div>
   </div>
+  <div class="backup-sec">
+    <div class="backup-title">アプリ</div>
+    <div class="backup-row">
+      <button class="btn-backup" id="refresh-app">最新版に更新する</button>
+    </div>
+    <div class="backup-note" id="refresh-note">改修が反映されないときに押してください。記録は消えません。</div>
+  </div>
   <div class="dialog-actions">
     <button class="btn-cancel" id="kpi-cancel">キャンセル</button>
     <button class="btn-save" id="kpi-save">保存</button>
@@ -689,6 +696,23 @@ backupFile.addEventListener('change', () => {
   reader.readAsText(file);
 });
 
+// 自動更新が届かないときのための手動の逃げ道。localStorageには触れないので記録は残る。
+document.getElementById('refresh-app').addEventListener('click', async () => {
+  const note = document.getElementById('refresh-note');
+  note.textContent = '最新版を取得しています…';
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) await reg.update();
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (e) {}
+  location.reload();
+});
+
 const dialog = document.getElementById('kpi-dialog');
 document.getElementById('kpi-open').addEventListener('click', () => {
   document.getElementById('kpi-k').value = store.kpi.k;
@@ -731,15 +755,26 @@ render();
 
 // アプリ本体を端末にキャッシュして、起動時に通信の完了を待たないようにする。
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-    navigator.serviceWorker.addEventListener('message', e => {
-      if (e.data && e.data.type === 'update-ready') {
-        document.getElementById('update-bar').hidden = false;
-      }
-    });
+  // 更新の知らせは読み込み直後に届きうるので、待たずに受け口を開けておく
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'update-ready') {
+      document.getElementById('update-bar').hidden = false;
+    }
   });
   document.getElementById('update-btn').addEventListener('click', () => location.reload());
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+
+  // アプリを再び開いたときにも更新を確認する(起動しっぱなしで数日使う場合の取りこぼし対策)
+  let lastCheck = Date.now();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (Date.now() - lastCheck < 5 * 60 * 1000) return;
+    lastCheck = Date.now();
+    navigator.serviceWorker.getRegistration().then(reg => reg && reg.update()).catch(() => {});
+  });
 }
 </script>
 </body>
