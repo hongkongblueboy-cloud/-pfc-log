@@ -128,7 +128,7 @@
     background: var(--bg);
     padding: 8px 16px calc(env(safe-area-inset-bottom) + 12px);
   }
-  .input-row { display: flex; align-items: center; gap: 8px; }
+  .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
     border: 0.5px solid var(--border); background: var(--card); color: var(--text-2);
@@ -161,7 +161,10 @@
     color: var(--text); font-size: 16px; padding: 10px 16px;
     border-radius: 22px; outline: none; min-width: 0;
     font-family: inherit;
+    height: 41px; line-height: 20px; resize: none; overflow-y: hidden;
+    transition: height 0.15s ease;
   }
+  #food-input:focus { height: 61px; }
   #food-input::placeholder { color: var(--text-3); }
   #send-btn {
     width: 40px; height: 40px; border-radius: 50%; border: none;
@@ -254,7 +257,7 @@
     <div class="mult-ticks"><span>0.1</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0</span><span>2.5</span><span>3.0</span></div>
   </div>
   <div class="input-row">
-    <input id="food-input" type="text" placeholder="サトウ 270k p4 c61" autocomplete="off" enterkeyhint="send">
+    <textarea id="food-input" rows="1" placeholder="サトウ 270k p4 c61" autocomplete="off" enterkeyhint="send"></textarea>
     <button id="mult-btn" aria-label="倍率を設定">×1.0</button>
     <button id="send-btn" aria-label="追加">↑</button>
   </div>
@@ -523,7 +526,11 @@ function submit() {
 }
 
 document.getElementById('send-btn').addEventListener('click', submit);
-input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+input.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+  e.preventDefault();
+  submit();
+});
 
 document.getElementById('log').addEventListener('click', e => {
   const btn = e.target.closest('.del');
