@@ -122,12 +122,32 @@
     padding: 4px 6px; cursor: pointer; line-height: 1; flex-shrink: 0;
   }
 
-  footer {
+  .view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+  .view.active { display: flex; }
+
+  .bottom {
     position: sticky;
     bottom: 0;
     background: var(--bg);
-    padding: 8px 16px calc(env(safe-area-inset-bottom) + 12px);
   }
+  footer {
+    background: var(--bg);
+    padding: 8px 16px 12px;
+  }
+  footer[hidden] { display: none; }
+  .tabbar {
+    display: flex;
+    background: var(--card);
+    border-top: 0.5px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab {
+    flex: 1; background: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-3); padding: 13px 0 12px;
+    border-top: 2px solid transparent; margin-top: -1px;
+  }
+  .tab.active { color: var(--text); border-top-color: var(--text); }
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
@@ -188,7 +208,7 @@
   .update-bar {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     background: var(--card); border: 0.5px solid var(--border); border-radius: 14px;
-    padding: 8px 12px; margin-bottom: 8px; font-size: 12px; color: var(--text-2);
+    padding: 8px 12px; margin: 0 16px 8px; font-size: 12px; color: var(--text-2);
   }
   .update-bar[hidden] { display: none; }
   #update-btn {
@@ -234,6 +254,7 @@
 </head>
 <body>
 
+<div class="view" id="view-pfc">
 <header>
   <div class="header-top">
     <div class="date-nav">
@@ -257,12 +278,18 @@
 </header>
 
 <main id="log"></main>
+</div>
 
-<footer>
-  <div class="update-bar" id="update-bar" hidden>
-    <span>新しいバージョンがあります</span>
-    <button id="update-btn">更新</button>
-  </div>
+<div class="view" id="view-rocket">
+  <main><div class="empty">Rocket<br>この画面の中身はこれから作ります</div></main>
+</div>
+
+<div class="bottom">
+<div class="update-bar" id="update-bar" hidden>
+  <span>新しいバージョンがあります</span>
+  <button id="update-btn">更新</button>
+</div>
+<footer id="pfc-footer">
   <div class="mult-panel" id="mult-panel">
     <div class="mult-head">
       <span>倍率 <b id="mult-val">×1.0</b></span>
@@ -279,6 +306,11 @@
   <div class="recent-row" id="recent-row"></div>
   <div class="hint" id="hint">いつもの書き方でそのまま送信 — 集計は自動</div>
 </footer>
+<nav class="tabbar" id="tabbar">
+  <button class="tab" data-view="pfc">PFC</button>
+  <button class="tab" data-view="rocket">Rocket</button>
+</nav>
+</div>
 
 <dialog id="kpi-dialog">
   <h2>KPI設定</h2>
@@ -679,6 +711,21 @@ document.getElementById('kpi-save').addEventListener('click', () => {
   render();
 });
 
+const tabbar = document.getElementById('tabbar');
+const pfcFooter = document.getElementById('pfc-footer');
+
+function setView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  tabbar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  pfcFooter.hidden = name !== 'pfc';
+}
+
+tabbar.addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (btn) setView(btn.dataset.view);
+});
+
+setView('pfc');
 indexEntries();
 render();
 
