@@ -381,16 +381,18 @@ function entriesFor(dateStr) {
 function macroHtml(label, now, goal, barColor) {
   const pct = Math.min(100, goal > 0 ? (now / goal) * 100 : 0);
   const over = now > goal;
+  // タンパク質は超過しても困らないので警告色にしない
+  const warn = over && label !== 'P';
   const left = goal - now;
   let note, noteClass;
-  if (over) { note = `${fmt(now - goal)}g超過`; noteClass = 'over'; }
+  if (over) { note = `${fmt(now - goal)}g超過`; noteClass = warn ? 'over' : 'ok'; }
   else { note = `あと${fmt(left)}g`; noteClass = label === 'P' ? 'ok' : ''; }
   return `
     <div class="macro-head">
       <span class="label">${label}</span>
       <span class="val">${fmt(now)}<span class="goal">/${goal}</span></span>
     </div>
-    <div class="bar"><div style="width:${pct}%; background:${over ? 'var(--over)' : barColor}"></div></div>
+    <div class="bar"><div style="width:${pct}%; background:${warn ? 'var(--over)' : barColor}"></div></div>
     <div class="macro-note ${noteClass}">${note}</div>`;
 }
 
