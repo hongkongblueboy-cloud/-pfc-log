@@ -185,6 +185,17 @@
     font-family: inherit; white-space: nowrap;
   }
   .recent-chip:active { transform: scale(0.97); }
+  .update-bar {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: var(--card); border: 0.5px solid var(--border); border-radius: 14px;
+    padding: 8px 12px; margin-bottom: 8px; font-size: 12px; color: var(--text-2);
+  }
+  .update-bar[hidden] { display: none; }
+  #update-btn {
+    border: 0.5px solid var(--border); background: var(--row); color: var(--text);
+    border-radius: 14px; font-size: 12px; font-weight: 600; padding: 5px 12px;
+    cursor: pointer; font-family: inherit;
+  }
   .hint { font-size: 11px; color: var(--text-3); text-align: center; margin-top: 8px; }
   .hint.error { color: var(--over); font-weight: 600; }
 
@@ -248,6 +259,10 @@
 <main id="log"></main>
 
 <footer>
+  <div class="update-bar" id="update-bar" hidden>
+    <span>新しいバージョンがあります</span>
+    <button id="update-btn">更新</button>
+  </div>
   <div class="mult-panel" id="mult-panel">
     <div class="mult-head">
       <span>倍率 <b id="mult-val">×1.0</b></span>
@@ -301,6 +316,20 @@ function loadStore() {
 }
 function saveStore() { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
 
+// 日付ごとの索引と最近の食品を持っておき、描画の手間が記録の総数に左右されないようにする。
+let byDate = new Map();
+let recentCache = null;
+
+function indexEntries() {
+  byDate = new Map();
+  for (const e of store.entries) {
+    const list = byDate.get(e.date);
+    if (list) list.push(e);
+    else byDate.set(e.date, [e]);
+  }
+  recentCache = null;
+}
+
 let store = loadStore();
 
 function todayStr(d = new Date()) {
@@ -346,7 +375,7 @@ function parseEntry(text) {
 }
 
 function entriesFor(dateStr) {
-  return store.entries.filter(e => e.date === dateStr);
+  return byDate.get(dateStr) || [];
 }
 
 function macroHtml(label, now, goal, barColor) {
@@ -408,6 +437,7 @@ function render() {
 }
 
 function recentFoods() {
+  if (recentCache) return recentCache;
   const seen = new Set();
   const out = [];
   for (let i = store.entries.length - 1; i >= 0 && out.length < 30; i--) {
@@ -423,6 +453,7 @@ function recentFoods() {
     }
     out.push({ name: e.name, k, p, f, c });
   }
+  recentCache = out;
   return out;
 }
 
@@ -510,12 +541,17 @@ function submit() {
     parsed.mult = appliedMult;
   }
   const now = new Date();
-  store.entries.push({
+  const entry = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
     date: viewDate,
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
     ...parsed
-  });
+  };
+  store.entries.push(entry);
+  const bucket = byDate.get(entry.date);
+  if (bucket) bucket.push(entry);
+  else byDate.set(entry.date, [entry]);
+  recentCache = null;
   saveStore();
   input.value = '';
   resetMult();
@@ -536,6 +572,7 @@ document.getElementById('log').addEventListener('click', e => {
   const btn = e.target.closest('.del');
   if (!btn) return;
   store.entries = store.entries.filter(en => en.id !== btn.dataset.id);
+  indexEntries();
   saveStore();
   render();
 });
@@ -589,6 +626,7 @@ backupExport.addEventListener('click', () => {
 backupImport.addEventListener('click', () => {
   if (pendingRestore) {
     store = pendingRestore;
+    indexEntries();
     saveStore();
     resetBackupUI();
     noteBackup('復元しました。', false);
@@ -639,7 +677,21 @@ document.getElementById('kpi-save').addEventListener('click', () => {
   render();
 });
 
+indexEntries();
 render();
+
+// アプリ本体を端末にキャッシュして、起動時に通信の完了を待たないようにする。
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'update-ready') {
+        document.getElementById('update-bar').hidden = false;
+      }
+    });
+  });
+  document.getElementById('update-btn').addEventListener('click', () => location.reload());
+}
 </script>
 </body>
 </html>
