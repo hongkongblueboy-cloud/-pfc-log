@@ -385,7 +385,7 @@ function macroHtml(label, now, goal, barColor) {
   const warn = over && label !== 'P';
   const left = goal - now;
   let note, noteClass;
-  if (over) { note = `${fmt(now - goal)}g超過`; noteClass = warn ? 'over' : 'ok'; }
+  if (over) { note = warn ? `${fmt(now - goal)}g超過` : ''; noteClass = warn ? 'over' : 'ok'; }
   else { note = `あと${fmt(left)}g`; noteClass = label === 'P' ? 'ok' : ''; }
   return `
     <div class="macro-head">
