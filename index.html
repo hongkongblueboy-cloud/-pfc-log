@@ -93,6 +93,13 @@
   .bar > div { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
   .kcal-bar { margin-bottom: 14px; }
   .macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .criteria { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .criterion {
+    background: var(--row); border-radius: 8px; padding: 8px 6px;
+    font-size: 12px; font-weight: 600; color: var(--text-2);
+    text-align: center; line-height: 1.45; word-break: break-word;
+    display: flex; align-items: center; justify-content: center;
+  }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -296,6 +303,7 @@
       <span class="kcal-left" id="r-left"></span>
     </div>
     <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--bar-k)"></div></div>
+    <div class="criteria" id="criteria"></div>
   </header>
   <main id="r-log"></main>
 </div>
@@ -346,7 +354,12 @@
   </div>
   <div class="backup-sec">
     <div class="backup-title">Rocket</div>
-    <div class="kpi-field"><label for="kpi-r">1日の活動目標 (分)</label><input id="kpi-r" type="number" inputmode="numeric"></div>
+    <div class="kpi-field" style="margin-bottom:10px"><label for="kpi-r">1日の活動目標 (分)</label><input id="kpi-r" type="number" inputmode="numeric"></div>
+    <div class="kpi-field"><label for="crit-0">転職の条件</label>
+      <input id="crit-0" type="text" style="margin-bottom:6px">
+      <input id="crit-1" type="text" style="margin-bottom:6px">
+      <input id="crit-2" type="text">
+    </div>
   </div>
   <div class="backup-sec">
     <div class="backup-title">データ</div>
@@ -388,6 +401,9 @@ function normalizeStore(s) {
   if (!Array.isArray(s.entries)) s.entries = [];
   if (!Array.isArray(s.acts)) s.acts = [];
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
+  if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
+    s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
+  }
   return s;
 }
 function saveStore() { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
@@ -523,6 +539,9 @@ function renderRocket() {
   const bar = document.getElementById('r-bar');
   bar.style.width = Math.min(100, goal > 0 ? (total / goal) * 100 : 0) + '%';
   bar.style.background = total >= goal ? 'var(--ok)' : 'var(--bar-k)';
+
+  document.getElementById('criteria').innerHTML =
+    store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
 
   const log = document.getElementById('r-log');
   if (!list.length) {
@@ -899,6 +918,7 @@ function openSettings() {
   document.getElementById('kpi-f').value = store.kpi.f;
   document.getElementById('kpi-c').value = store.kpi.c;
   document.getElementById('kpi-r').value = store.actGoal;
+  store.criteria.forEach((c, i) => { document.getElementById('crit-' + i).value = c; });
   resetBackupUI();
   dialog.showModal();
 }
@@ -912,6 +932,7 @@ document.getElementById('kpi-save').addEventListener('click', () => {
     c: Number(document.getElementById('kpi-c').value) || 0
   };
   store.actGoal = Number(document.getElementById('kpi-r').value) || 120;
+  store.criteria = store.criteria.map((c, i) => document.getElementById('crit-' + i).value.trim() || c);
   saveStore();
   dialog.close();
   render();
