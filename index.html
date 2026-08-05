@@ -93,13 +93,20 @@
   .bar > div { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
   .kcal-bar { margin-bottom: 14px; }
   .macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .criteria { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .criterion {
-    background: var(--row); border-radius: 8px; padding: 8px 6px;
-    font-size: 12px; font-weight: 600; color: var(--text-2);
-    text-align: center; line-height: 1.45; word-break: break-word;
-    display: flex; align-items: center; justify-content: center;
+  .criteria-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; letter-spacing: 0.1em; color: var(--text-3);
+    margin-bottom: 7px;
   }
+  .streak { font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--ok); }
+  .criteria { display: flex; align-items: stretch; }
+  .criterion {
+    flex: 1 1 0; min-width: 0; text-align: center;
+    font-size: 12px; font-weight: 600; color: var(--text);
+    line-height: 1.45; padding: 0 4px; word-break: break-word;
+    border-left: 0.5px solid var(--border);
+  }
+  .criterion:first-child { border-left: none; }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -114,6 +121,8 @@
     text-align: center; color: var(--text-3); font-size: 13px;
     padding: 48px 0; line-height: 1.8;
   }
+  .empty b { display: block; font-size: 15px; color: var(--text-2); font-weight: 600; margin-bottom: 2px; }
+  .empty-hint { display: block; margin-top: 10px; font-size: 11px; }
   .entry { display: flex; align-items: center; gap: 10px; }
   .entry .time { font-size: 11px; color: var(--text-3); min-width: 36px; text-align: right; }
   .entry .body {
@@ -303,6 +312,10 @@
       <span class="kcal-left" id="r-left"></span>
     </div>
     <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--bar-k)"></div></div>
+    <div class="criteria-head">
+      <span>ゆずれない3つ</span>
+      <span class="streak" id="r-streak"></span>
+    </div>
     <div class="criteria" id="criteria"></div>
   </header>
   <main id="r-log"></main>
@@ -517,6 +530,23 @@ function parseActivity(text) {
   return { name: nameParts.join(' '), start, end, minutes };
 }
 
+function minutesOn(dateStr) {
+  return actsFor(dateStr).reduce((sum, a) => sum + a.minutes, 0);
+}
+
+// 今日が未達のうちは、昨日までの連続を数える(日中に途切れた表示にしない)
+function streakDays() {
+  const goal = store.actGoal;
+  let d = todayStr();
+  if (minutesOn(d) < goal) d = shiftDate(d, -1);
+  let n = 0;
+  while (minutesOn(d) >= goal) {
+    n++;
+    d = shiftDate(d, -1);
+  }
+  return n;
+}
+
 function renderRocket() {
   const goal = store.actGoal;
   const list = actsFor(viewDate).slice().sort((a, b) => a.start - b.start);
@@ -543,9 +573,12 @@ function renderRocket() {
   document.getElementById('criteria').innerHTML =
     store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
 
+  const streak = streakDays();
+  document.getElementById('r-streak').textContent = streak >= 2 ? `${streak}日連続` : '';
+
   const log = document.getElementById('r-log');
   if (!list.length) {
-    log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「書類作成 1000 1045」のように入力</div>`;
+    log.innerHTML = `<div class="empty"><b>この日はまだ0分</b><br>15分でも積めば、あとが軽くなる<br><span class="empty-hint">「書類作成 1000 1045」のように入力</span></div>`;
     return;
   }
   log.innerHTML = list.map(a => `
