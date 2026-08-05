@@ -996,11 +996,20 @@ renderRocket();
 
 // アプリ本体を端末にキャッシュして、起動時に通信の完了を待たないようにする。
 if ('serviceWorker' in navigator) {
+  // まだ操作していない画面なら黙って新版に入れ替える。触ったあとは勝手に消さず確認を出す。
+  let touched = false;
+  ['pointerdown', 'keydown'].forEach(type =>
+    window.addEventListener(type, () => { touched = true; }, { capture: true, once: true }));
+
   // 更新の知らせは読み込み直後に届きうるので、待たずに受け口を開けておく
   navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data && e.data.type === 'update-ready') {
-      document.getElementById('update-bar').hidden = false;
+    if (!e.data || e.data.type !== 'update-ready') return;
+    if (!touched && !sessionStorage.getItem('pfc-reloaded')) {
+      sessionStorage.setItem('pfc-reloaded', '1');
+      location.reload();
+      return;
     }
+    document.getElementById('update-bar').hidden = false;
   });
   document.getElementById('update-btn').addEventListener('click', () => location.reload());
 

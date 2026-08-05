@@ -1,9 +1,14 @@
-const CACHE = 'pfc-log-shell-v2';
+const CACHE = 'pfc-log-shell-v3';
 const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+  event.waitUntil(caches.open(CACHE).then(cache => Promise.all(
+    ASSETS.map(async url => {
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (res.ok) await cache.put(url, res);
+    })
+  )));
 });
 
 self.addEventListener('activate', event => {
@@ -30,7 +35,9 @@ async function staleWhileRevalidate(event) {
   const cache = await caches.open(CACHE);
   const cached = await cache.match(req, { ignoreSearch: true });
 
-  const fetching = fetch(req).then(async res => {
+  // 既定の fetch はブラウザのHTTPキャッシュを見るため、配信元の max-age が切れるまで
+  // 古い内容が返ってくる。no-cache で必ずサーバーに確認させる(未更新なら304で軽い)。
+  const fetching = fetch(req.url, { cache: 'no-cache' }).then(async res => {
     if (!res || !res.ok) return res;
     const prevTag = cached && cached.headers.get('etag');
     const nextTag = res.headers.get('etag');
