@@ -107,6 +107,31 @@
     border-left: 0.5px solid var(--border);
   }
   .criterion:first-child { border-left: none; }
+
+  .tl-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; letter-spacing: 0.1em; color: var(--text-3);
+    margin: 14px 0 9px; padding-top: 13px; border-top: 0.5px solid var(--border);
+  }
+  .tl-countdown { font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--text-2); }
+  .timeline { display: flex; }
+  .tl-step { flex: 1 1 0; min-width: 0; text-align: center; position: relative; }
+  .tl-step::before, .tl-step::after {
+    content: ''; position: absolute; top: 4px; height: 1px; background: var(--border);
+  }
+  .tl-step::before { left: 0; right: 50%; }
+  .tl-step::after { left: 50%; right: 0; }
+  .tl-step:first-child::before, .tl-step:last-child::after { display: none; }
+  .tl-dot {
+    position: relative; z-index: 1; width: 9px; height: 9px; border-radius: 50%;
+    margin: 0 auto 6px; background: var(--bg); border: 1px solid var(--border);
+  }
+  .tl-when { font-size: 10px; color: var(--text-3); line-height: 1.3; }
+  .tl-what { font-size: 11px; color: var(--text-3); font-weight: 600; line-height: 1.35; }
+  .tl-step.done .tl-dot { background: var(--text-3); border-color: var(--text-3); }
+  .tl-step.next .tl-dot { background: var(--ok); border-color: var(--ok); }
+  .tl-step.next .tl-when { color: var(--text-2); }
+  .tl-step.next .tl-what { color: var(--text); }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -317,6 +342,11 @@
       <span class="streak" id="r-streak"></span>
     </div>
     <div class="criteria" id="criteria"></div>
+    <div class="tl-head">
+      <span>ここからの道のり</span>
+      <span class="tl-countdown" id="tl-countdown"></span>
+    </div>
+    <div class="timeline" id="timeline"></div>
   </header>
   <main id="r-log"></main>
 </div>
@@ -416,6 +446,14 @@ function normalizeStore(s) {
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
   if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
     s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
+  }
+  if (!Array.isArray(s.milestones) || !s.milestones.length) {
+    s.milestones = [
+      { on: '2026-10-15', when: '10月中旬', what: '内定' },
+      { on: '2026-10-31', when: '10末', what: '退職申し出' },
+      { on: '2026-11-30', when: '11末', what: '退社' },
+      { on: '2026-12-01', when: '12/1', what: '入社' }
+    ];
   }
   return s;
 }
@@ -576,6 +614,8 @@ function renderRocket() {
   const streak = streakDays();
   document.getElementById('r-streak').textContent = streak >= 2 ? `${streak}日連続` : '';
 
+  renderTimeline();
+
   const log = document.getElementById('r-log');
   if (!list.length) {
     log.innerHTML = `<div class="empty"><b>この日はまだ0分</b><br>15分でも積めば、あとが軽くなる<br><span class="empty-hint">「書類作成 1000 1045」のように入力</span></div>`;
@@ -589,6 +629,36 @@ function renderRocket() {
       </div>
       <button class="del" data-id="${a.id}" aria-label="削除">×</button>
     </div>`).join('');
+}
+
+function daysUntil(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const [ty, tm, td] = todayStr().split('-').map(Number);
+  return Math.round((new Date(y, m - 1, d) - new Date(ty, tm - 1, td)) / 86400000);
+}
+
+function renderTimeline() {
+  const today = todayStr();
+  const nextIndex = store.milestones.findIndex(ms => ms.on >= today);
+
+  document.getElementById('timeline').innerHTML = store.milestones.map((ms, i) => {
+    const state = ms.on < today ? 'done' : (i === nextIndex ? 'next' : '');
+    return `
+      <div class="tl-step ${state}">
+        <div class="tl-dot"></div>
+        <div class="tl-when">${escapeHtml(ms.when)}</div>
+        <div class="tl-what">${escapeHtml(ms.what)}</div>
+      </div>`;
+  }).join('');
+
+  const countdown = document.getElementById('tl-countdown');
+  if (nextIndex === -1) {
+    countdown.textContent = '';
+    return;
+  }
+  const next = store.milestones[nextIndex];
+  const days = daysUntil(next.on);
+  countdown.textContent = days === 0 ? `${next.what}は今日` : `${next.what}まで あと${days}日`;
 }
 
 function macroHtml(label, now, goal, barColor) {
