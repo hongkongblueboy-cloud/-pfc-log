@@ -134,7 +134,7 @@
   .tl-step.next .tl-what { color: var(--text); }
   .gym-row2 { display: flex; align-items: baseline; margin-top: 2px; }
   .gym-year { font-size: 13px; color: var(--text-2); }
-  #g-volume, #g-distance { color: var(--text-2); }
+  #g-volume, #g-distance { color: var(--text-2); white-space: pre; }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -703,8 +703,8 @@ function renderGym() {
   const year = Number(viewDate.slice(0, 4));
   document.getElementById('g-year').textContent = `今年 ${gymYearCount(year)}回`;
 
-  document.getElementById('g-volume').textContent = volume ? `総量 ${volume.toLocaleString()}kg` : '';
-  document.getElementById('g-distance').textContent = distance ? `総距離 ${distance}km` : '';
+  document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '';
+  document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '';
 
   const log = document.getElementById('g-log');
   if (!list.length) {
