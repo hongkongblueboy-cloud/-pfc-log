@@ -9,31 +9,49 @@
 <style>
   :root {
     color-scheme: light;
-    --bg: #ffeeee;
     --card: #ffffff;
-    --row: #fbe6ec;
-    --text: #2a001b;
-    --text-2: #7d5f6d;
-    --text-3: #ab9595;
-    --border: rgba(42,0,27,0.11);
-    --track: #f7dbe4;
-    --bar-k: #7a0079;
-    --bar-p: #b2007f;
-    --bar-f: #9362bb;
-    --bar-c: #472354;
-    --note-p: #b2007f;
-    --note-f: #6f4095;
-    --note-c: #472354;
-    --over: #f32086;
-    --ok: #7a0079;
-    --accent-text: #b2007f;
-    --send: #2a001b;
-    --send-fg: #ffeeee;
-    --tab-pfc: #b2007f;
-    --tab-rocket: #7a0079;
-    --tab-gym: #5c357c;
-    --tab-4: #8b6e6e;
-    --tab-5: #6b0354;
+    --text: #1f1725;
+    --text-2: #6e6478;
+    --text-3: #a79fb0;
+    --border: rgba(31,23,37,0.11);
+    --send-fg: #ffffff;
+    /* 意味の色は画面が変わっても動かさない */
+    --over: #dc2626;
+    --ok: #16a34a;
+    /* P/F/C は一目で見分けられるよう色相を離す */
+    --bar-p: #be185d;
+    --bar-f: #b45309;
+    --bar-c: #0f766e;
+    --note-p: #be185d;
+    --note-f: #92400e;
+    --note-c: #0f766e;
+  }
+  body[data-screen="pfc"] {
+    --bg: #fff2f7;
+    --head: #ffe1ed;
+    --row: #ffe8f0;
+    --track: #f8cadf;
+    --bar-k: #b5007a;
+    --accent-text: #b5007a;
+    --send: #7d0055;
+  }
+  body[data-screen="rocket"] {
+    --bg: #f4f0ff;
+    --head: #e6dcff;
+    --row: #ece5ff;
+    --track: #d5c6f2;
+    --bar-k: #6b2fbe;
+    --accent-text: #6b2fbe;
+    --send: #47207f;
+  }
+  body[data-screen="gym"] {
+    --bg: #ecf7fa;
+    --head: #d3ecf4;
+    --row: #e0f1f6;
+    --track: #b9deea;
+    --bar-k: #0e7490;
+    --accent-text: #0e7490;
+    --send: #0a5064;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
@@ -53,7 +71,7 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--card);
+    background: var(--head);
     border-bottom: 0.5px solid var(--border);
     padding: calc(env(safe-area-inset-top) + 12px) 16px 14px;
   }
@@ -169,7 +187,7 @@
   footer[hidden] { display: none; }
   .tabbar {
     display: flex;
-    background: var(--card);
+    background: var(--head);
     border-top: 0.5px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -179,10 +197,7 @@
     color: var(--text-3); padding: 13px 0 12px;
     border-top: 2px solid transparent; margin-top: -1px;
   }
-  .tab.active { color: var(--text); border-top-color: var(--text); }
-  .tab[data-view="pfc"].active { color: var(--tab-pfc); border-top-color: var(--tab-pfc); }
-  .tab[data-view="rocket"].active { color: var(--tab-rocket); border-top-color: var(--tab-rocket); }
-  .tab[data-view="gym"].active { color: var(--tab-gym); border-top-color: var(--tab-gym); }
+  .tab.active { color: var(--accent-text); border-top-color: var(--accent-text); }
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
@@ -287,7 +302,7 @@
   .btn-save { background: var(--send); color: var(--send-fg); }
 </style>
 </head>
-<body>
+<body data-screen="pfc">
 
 <div class="view" id="view-pfc">
 <header>
@@ -304,7 +319,7 @@
     <span class="kcal-goal" id="kcal-goal">/ 2100 kcal</span>
     <span class="kcal-left" id="kcal-left"></span>
   </div>
-  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--tab-pfc)"></div></div>
+  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--bar-k)"></div></div>
   <div class="macros">
     <div class="macro" id="macro-p"></div>
     <div class="macro" id="macro-f"></div>
@@ -330,7 +345,7 @@
       <span class="kcal-goal" id="r-goal-label">/ 120 分</span>
       <span class="kcal-left" id="r-left"></span>
     </div>
-    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--tab-rocket)"></div></div>
+    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--bar-k)"></div></div>
     <div class="criteria-head">
       <span>ゆずれない3つ</span>
       <span class="streak" id="r-streak"></span>
@@ -605,7 +620,7 @@ function renderRocket() {
 
   const bar = document.getElementById('r-bar');
   bar.style.width = Math.min(100, goal > 0 ? (total / goal) * 100 : 0) + '%';
-  bar.style.background = total >= goal ? 'var(--ok)' : 'var(--tab-rocket)';
+  bar.style.background = total >= goal ? 'var(--ok)' : 'var(--bar-k)';
 
   document.getElementById('criteria').innerHTML =
     store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
@@ -697,7 +712,7 @@ function render() {
 
   const kcalBar = document.getElementById('kcal-bar');
   kcalBar.style.width = Math.min(100, kpi.k > 0 ? (total.k / kpi.k) * 100 : 0) + '%';
-  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--tab-pfc)';
+  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--bar-k)';
 
   document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)', 'var(--note-p)');
   document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)', 'var(--note-f)');
@@ -1048,6 +1063,7 @@ const rocketFooter = document.getElementById('rocket-footer');
 function setView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   tabbar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  document.body.dataset.screen = name;
   pfcFooter.hidden = name !== 'pfc';
   rocketFooter.hidden = name !== 'rocket';
 }
