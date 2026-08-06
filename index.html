@@ -25,6 +25,9 @@
     --accent-text: #185FA5;
     --send: #1a1a18;
     --send-fg: #ffffff;
+    --tab-pfc: #993C1D;
+    --tab-rocket: #185FA5;
+    --tab-gym: #534AB7;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -42,6 +45,9 @@
       --accent-text: #85B7EB;
       --send: #f0efe9;
       --send-fg: #1a1a18;
+      --tab-pfc: #F0997B;
+      --tab-rocket: #85B7EB;
+      --tab-gym: #AFA9EC;
     }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
@@ -189,6 +195,9 @@
     border-top: 2px solid transparent; margin-top: -1px;
   }
   .tab.active { color: var(--text); border-top-color: var(--text); }
+  .tab[data-view="pfc"].active { color: var(--tab-pfc); border-top-color: var(--tab-pfc); }
+  .tab[data-view="rocket"].active { color: var(--tab-rocket); border-top-color: var(--tab-rocket); }
+  .tab[data-view="gym"].active { color: var(--tab-gym); border-top-color: var(--tab-gym); }
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
@@ -351,6 +360,10 @@
   <main id="r-log"></main>
 </div>
 
+<div class="view" id="view-gym">
+  <main><div class="empty"><b>GYM</b><br>この画面の中身はこれから作ります</div></main>
+</div>
+
 <div class="bottom">
 <div class="update-bar" id="update-bar" hidden>
   <span>新しいバージョンがあります</span>
@@ -383,6 +396,7 @@
 <nav class="tabbar" id="tabbar">
   <button class="tab" data-view="pfc">PFC</button>
   <button class="tab" data-view="rocket">Rocket</button>
+  <button class="tab" data-view="gym">GYM</button>
 </nav>
 </div>
 
