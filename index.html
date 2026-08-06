@@ -132,6 +132,7 @@
   .tl-step.next .tl-dot { background: var(--ok); border-color: var(--ok); }
   .tl-step.next .tl-when { color: var(--text-2); }
   .tl-step.next .tl-what { color: var(--text); }
+  #g-week { font-size: 13px; font-weight: 600; letter-spacing: 0; }
   .gym-row2 { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 13px; color: var(--text-2); }
@@ -704,9 +705,15 @@ function renderGym() {
   const from = weekStart(viewDate);
   const toDate = shiftDate(from, 6);
   const days = gymDaysBetween(from, toDate);
+  // 曜日ごとに「この日までに何日行っていれば間に合うか」。月曜は週の初日なので問わない。
+  const NEED = [4, 0, 1, 2, 3, 4, 4]; // 日 月 火 水 木 金 土
+  const [vy, vm, vd] = viewDate.split('-').map(Number);
+  const need = NEED[new Date(vy, vm - 1, vd).getDay()];
+
   const weekEl = document.getElementById('g-week');
   weekEl.textContent = days;
-  weekEl.style.color = days >= 4 ? 'var(--ok)' : '';
+  weekEl.style.color = days >= 4 ? 'var(--ok)' : (days < need ? 'var(--over)' : '');
+
   const weekBar = document.getElementById('g-week-bar');
   weekBar.style.width = Math.min(100, (days / 4) * 100) + '%';
   weekBar.style.background = days >= 4 ? 'var(--ok)' : 'var(--bar-k)';
