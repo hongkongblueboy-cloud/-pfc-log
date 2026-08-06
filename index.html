@@ -8,50 +8,41 @@
 <title>PFC Log</title>
 <style>
   :root {
-    color-scheme: light;
+    --bg: #f5f4f0;
     --card: #ffffff;
-    --text: #1f1725;
-    --text-2: #6e6478;
-    --text-3: #a79fb0;
-    --border: rgba(31,23,37,0.11);
+    --row: #f0efe9;
+    --text: #1a1a18;
+    --text-2: #6b6a64;
+    --text-3: #a09f97;
+    --border: rgba(0,0,0,0.08);
+    --track: #e8e7e0;
+    --bar-k: #1a1a18;
+    --bar-p: #378ADD;
+    --bar-f: #EF9F27;
+    --bar-c: #1D9E75;
+    --over: #E24B4A;
+    --ok: #1D9E75;
+    --accent-text: #185FA5;
+    --send: #1a1a18;
     --send-fg: #ffffff;
-    /* 意味の色は画面が変わっても動かさない */
-    --over: #dc2626;
-    --ok: #16a34a;
-    /* P/F/C は一目で見分けられるよう色相を離す */
-    --bar-p: #be185d;
-    --bar-f: #b45309;
-    --bar-c: #0f766e;
-    --note-p: #be185d;
-    --note-f: #92400e;
-    --note-c: #0f766e;
   }
-  body[data-screen="pfc"] {
-    --bg: #fff2f7;
-    --head: #ffe1ed;
-    --row: #ffe8f0;
-    --track: #f8cadf;
-    --bar-k: #b5007a;
-    --accent-text: #b5007a;
-    --send: #7d0055;
-  }
-  body[data-screen="rocket"] {
-    --bg: #f4f0ff;
-    --head: #e6dcff;
-    --row: #ece5ff;
-    --track: #d5c6f2;
-    --bar-k: #6b2fbe;
-    --accent-text: #6b2fbe;
-    --send: #47207f;
-  }
-  body[data-screen="gym"] {
-    --bg: #ecf7fa;
-    --head: #d3ecf4;
-    --row: #e0f1f6;
-    --track: #b9deea;
-    --bar-k: #0e7490;
-    --accent-text: #0e7490;
-    --send: #0a5064;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171716;
+      --card: #232322;
+      --row: #2e2e2c;
+      --text: #f0efe9;
+      --text-2: #a3a29a;
+      --text-3: #6f6e67;
+      --border: rgba(255,255,255,0.09);
+      --track: #3a3a37;
+      --bar-k: #f0efe9;
+      --over: #F09595;
+      --ok: #5DCAA5;
+      --accent-text: #85B7EB;
+      --send: #f0efe9;
+      --send-fg: #1a1a18;
+    }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
@@ -71,7 +62,7 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--head);
+    background: var(--card);
     border-bottom: 0.5px solid var(--border);
     padding: calc(env(safe-area-inset-top) + 12px) 16px 14px;
   }
@@ -187,7 +178,7 @@
   footer[hidden] { display: none; }
   .tabbar {
     display: flex;
-    background: var(--head);
+    background: var(--card);
     border-top: 0.5px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -197,7 +188,7 @@
     color: var(--text-3); padding: 13px 0 12px;
     border-top: 2px solid transparent; margin-top: -1px;
   }
-  .tab.active { color: var(--accent-text); border-top-color: var(--accent-text); }
+  .tab.active { color: var(--text); border-top-color: var(--text); }
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
@@ -302,7 +293,7 @@
   .btn-save { background: var(--send); color: var(--send-fg); }
 </style>
 </head>
-<body data-screen="pfc">
+<body>
 
 <div class="view" id="view-pfc">
 <header>
@@ -675,7 +666,7 @@ function renderTimeline() {
   countdown.textContent = days === 0 ? `${next.what}は今日` : `${next.what}まで あと${days}日`;
 }
 
-function macroHtml(label, now, goal, barColor, noteColor) {
+function macroHtml(label, now, goal, barColor) {
   const pct = Math.min(100, goal > 0 ? (now / goal) * 100 : 0);
   const over = now > goal;
   // タンパク質は超過しても困らないので警告色にしない
@@ -683,14 +674,14 @@ function macroHtml(label, now, goal, barColor, noteColor) {
   const left = goal - now;
   let note, noteClass;
   if (over) { note = warn ? `${fmt(now - goal)}g超過` : ''; noteClass = warn ? 'over' : 'ok'; }
-  else { note = `あと${fmt(left)}g`; noteClass = ''; }
+  else { note = `あと${fmt(left)}g`; noteClass = label === 'P' ? 'ok' : ''; }
   return `
     <div class="macro-head">
       <span class="label">${label}</span>
       <span class="val">${fmt(now)}<span class="goal">/${goal}</span></span>
     </div>
     <div class="bar"><div style="width:${pct}%; background:${warn ? 'var(--over)' : barColor}"></div></div>
-    <div class="macro-note ${noteClass}" style="color:${warn ? 'var(--over)' : noteColor}">${note}</div>`;
+    <div class="macro-note ${noteClass}">${note}</div>`;
 }
 
 function fmt(n) { return Math.round(n * 10) / 10; }
@@ -714,9 +705,9 @@ function render() {
   kcalBar.style.width = Math.min(100, kpi.k > 0 ? (total.k / kpi.k) * 100 : 0) + '%';
   kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--bar-k)';
 
-  document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)', 'var(--note-p)');
-  document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)', 'var(--note-f)');
-  document.getElementById('macro-c').innerHTML = macroHtml('C', total.c, kpi.c, 'var(--bar-c)', 'var(--note-c)');
+  document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)');
+  document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)');
+  document.getElementById('macro-c').innerHTML = macroHtml('C', total.c, kpi.c, 'var(--bar-c)');
 
   renderRecents();
   const log = document.getElementById('log');
@@ -1063,7 +1054,6 @@ const rocketFooter = document.getElementById('rocket-footer');
 function setView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   tabbar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === name));
-  document.body.dataset.screen = name;
   pfcFooter.hidden = name !== 'pfc';
   rocketFooter.hidden = name !== 'rocket';
 }
