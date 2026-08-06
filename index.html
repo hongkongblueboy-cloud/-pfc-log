@@ -132,7 +132,9 @@
   .tl-step.next .tl-dot { background: var(--ok); border-color: var(--ok); }
   .tl-step.next .tl-when { color: var(--text-2); }
   .tl-step.next .tl-what { color: var(--text); }
-  .gym-year { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .gym-row2 { display: flex; align-items: baseline; margin-top: 2px; }
+  .gym-year { font-size: 13px; color: var(--text-2); }
+  #g-volume, #g-distance { color: var(--text-2); }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -366,7 +368,10 @@
       <span class="kcal-goal">日 / 週4日</span>
       <span class="kcal-left" id="g-volume"></span>
     </div>
-    <div class="gym-year" id="g-year"></div>
+    <div class="gym-row2">
+      <span class="gym-year" id="g-year"></span>
+      <span class="kcal-left" id="g-distance"></span>
+    </div>
   </header>
   <main id="g-log"></main>
 </div>
@@ -646,7 +651,12 @@ function parseGym(text) {
     if (m) volume += parseFloat(m[1]) * parseFloat(m[2]);
     else allWeighted = false;
   }
-  return { name, sets: setsText, count: parts.length, volume: allWeighted ? Math.round(volume) : 0 };
+  let distance = 0;
+  const km = /(\d+(?:\.\d+)?)\s*(?:km|KM|Km|kM|㎞|キロ)/g;
+  let d;
+  while ((d = km.exec(setsText))) distance += parseFloat(d[1]);
+
+  return { name, sets: setsText, count: parts.length, volume: allWeighted ? Math.round(volume) : 0, distance: Math.round(distance * 10) / 10 };
 }
 
 // 月曜はじまりの週の初日を返す
@@ -679,6 +689,7 @@ function gymYearCount(year) {
 function renderGym() {
   const list = gymFor(viewDate);
   const volume = list.reduce((sum, g) => sum + g.volume, 0);
+  const distance = Math.round(list.reduce((sum, g) => sum + (g.distance || 0), 0) * 10) / 10;
 
   document.getElementById('g-date-label').textContent = formatDateLabel(viewDate);
 
@@ -693,6 +704,7 @@ function renderGym() {
   document.getElementById('g-year').textContent = `今年 ${gymYearCount(year)}回`;
 
   document.getElementById('g-volume').textContent = volume ? `総量 ${volume.toLocaleString()}kg` : '';
+  document.getElementById('g-distance').textContent = distance ? `総距離 ${distance}km` : '';
 
   const log = document.getElementById('g-log');
   if (!list.length) {
