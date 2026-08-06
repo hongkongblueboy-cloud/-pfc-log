@@ -8,47 +8,32 @@
 <title>PFC Log</title>
 <style>
   :root {
-    --bg: #f5f4f0;
+    color-scheme: light;
+    --bg: #ffeeee;
     --card: #ffffff;
-    --row: #f0efe9;
-    --text: #1a1a18;
-    --text-2: #6b6a64;
-    --text-3: #a09f97;
-    --border: rgba(0,0,0,0.08);
-    --track: #e8e7e0;
-    --bar-k: #1a1a18;
-    --bar-p: #378ADD;
-    --bar-f: #EF9F27;
-    --bar-c: #1D9E75;
-    --over: #E24B4A;
-    --ok: #1D9E75;
-    --accent-text: #185FA5;
-    --send: #1a1a18;
-    --send-fg: #ffffff;
-    --tab-pfc: #993C1D;
-    --tab-rocket: #185FA5;
-    --tab-gym: #534AB7;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #171716;
-      --card: #232322;
-      --row: #2e2e2c;
-      --text: #f0efe9;
-      --text-2: #a3a29a;
-      --text-3: #6f6e67;
-      --border: rgba(255,255,255,0.09);
-      --track: #3a3a37;
-      --bar-k: #f0efe9;
-      --over: #F09595;
-      --ok: #5DCAA5;
-      --accent-text: #85B7EB;
-      --send: #f0efe9;
-      --send-fg: #1a1a18;
-      --tab-pfc: #F0997B;
-      --tab-rocket: #85B7EB;
-      --tab-gym: #AFA9EC;
-    }
+    --row: #fbe6ec;
+    --text: #2a001b;
+    --text-2: #7d5f6d;
+    --text-3: #ab9595;
+    --border: rgba(42,0,27,0.11);
+    --track: #f7dbe4;
+    --bar-k: #7a0079;
+    --bar-p: #b2007f;
+    --bar-f: #9362bb;
+    --bar-c: #472354;
+    --note-p: #b2007f;
+    --note-f: #6f4095;
+    --note-c: #472354;
+    --over: #f32086;
+    --ok: #7a0079;
+    --accent-text: #b2007f;
+    --send: #2a001b;
+    --send-fg: #ffeeee;
+    --tab-pfc: #b2007f;
+    --tab-rocket: #7a0079;
+    --tab-gym: #5c357c;
+    --tab-4: #8b6e6e;
+    --tab-5: #6b0354;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
@@ -319,7 +304,7 @@
     <span class="kcal-goal" id="kcal-goal">/ 2100 kcal</span>
     <span class="kcal-left" id="kcal-left"></span>
   </div>
-  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--bar-k)"></div></div>
+  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--tab-pfc)"></div></div>
   <div class="macros">
     <div class="macro" id="macro-p"></div>
     <div class="macro" id="macro-f"></div>
@@ -345,7 +330,7 @@
       <span class="kcal-goal" id="r-goal-label">/ 120 分</span>
       <span class="kcal-left" id="r-left"></span>
     </div>
-    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--bar-k)"></div></div>
+    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--tab-rocket)"></div></div>
     <div class="criteria-head">
       <span>ゆずれない3つ</span>
       <span class="streak" id="r-streak"></span>
@@ -620,7 +605,7 @@ function renderRocket() {
 
   const bar = document.getElementById('r-bar');
   bar.style.width = Math.min(100, goal > 0 ? (total / goal) * 100 : 0) + '%';
-  bar.style.background = total >= goal ? 'var(--ok)' : 'var(--bar-k)';
+  bar.style.background = total >= goal ? 'var(--ok)' : 'var(--tab-rocket)';
 
   document.getElementById('criteria').innerHTML =
     store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
@@ -675,7 +660,7 @@ function renderTimeline() {
   countdown.textContent = days === 0 ? `${next.what}は今日` : `${next.what}まで あと${days}日`;
 }
 
-function macroHtml(label, now, goal, barColor) {
+function macroHtml(label, now, goal, barColor, noteColor) {
   const pct = Math.min(100, goal > 0 ? (now / goal) * 100 : 0);
   const over = now > goal;
   // タンパク質は超過しても困らないので警告色にしない
@@ -683,14 +668,14 @@ function macroHtml(label, now, goal, barColor) {
   const left = goal - now;
   let note, noteClass;
   if (over) { note = warn ? `${fmt(now - goal)}g超過` : ''; noteClass = warn ? 'over' : 'ok'; }
-  else { note = `あと${fmt(left)}g`; noteClass = label === 'P' ? 'ok' : ''; }
+  else { note = `あと${fmt(left)}g`; noteClass = ''; }
   return `
     <div class="macro-head">
       <span class="label">${label}</span>
       <span class="val">${fmt(now)}<span class="goal">/${goal}</span></span>
     </div>
     <div class="bar"><div style="width:${pct}%; background:${warn ? 'var(--over)' : barColor}"></div></div>
-    <div class="macro-note ${noteClass}">${note}</div>`;
+    <div class="macro-note ${noteClass}" style="color:${warn ? 'var(--over)' : noteColor}">${note}</div>`;
 }
 
 function fmt(n) { return Math.round(n * 10) / 10; }
@@ -712,11 +697,11 @@ function render() {
 
   const kcalBar = document.getElementById('kcal-bar');
   kcalBar.style.width = Math.min(100, kpi.k > 0 ? (total.k / kpi.k) * 100 : 0) + '%';
-  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--bar-k)';
+  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--tab-pfc)';
 
-  document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)');
-  document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)');
-  document.getElementById('macro-c').innerHTML = macroHtml('C', total.c, kpi.c, 'var(--bar-c)');
+  document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)', 'var(--note-p)');
+  document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)', 'var(--note-f)');
+  document.getElementById('macro-c').innerHTML = macroHtml('C', total.c, kpi.c, 'var(--bar-c)', 'var(--note-c)');
 
   renderRecents();
   const log = document.getElementById('log');
