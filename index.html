@@ -222,7 +222,7 @@
     color: var(--text); font-size: 16px; padding: 10px 16px;
     border-radius: 22px; outline: none; min-width: 0;
     font-family: inherit;
-    height: 41px; line-height: 20px; resize: none; overflow-y: hidden;
+    height: 41px; line-height: 20px; resize: none; overflow-y: auto;
     transition: height 0.15s ease;
   }
   .line-input:focus { height: 61px; }
@@ -850,6 +850,20 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 }
 
+// 入力中は2行分を確保し、内容が増えたら4行分まで伸ばす。それ以上は中でスクロールさせる。
+const INPUT_MIN = 61, INPUT_MAX = 101;
+
+function fitInput(el) {
+  if (document.activeElement !== el && !el.value) { el.style.height = ''; return; }
+  el.style.height = 'auto';
+  el.style.height = Math.min(Math.max(el.scrollHeight + 1, INPUT_MIN), INPUT_MAX) + 'px';
+}
+
+document.querySelectorAll('.line-input').forEach(el => {
+  ['input', 'focus'].forEach(t => el.addEventListener(t, () => fitInput(el)));
+  el.addEventListener('blur', () => fitInput(el));
+});
+
 const input = document.getElementById('food-input');
 const hint = document.getElementById('hint');
 
@@ -926,6 +940,7 @@ function submit() {
   recentCache = null;
   saveStore();
   input.value = '';
+  fitInput(input);
   resetMult();
   if (appliedMult !== 1) showHint(`×${appliedMult} を適用して追加しました`, false);
   else showHint(parsed.estimated ? 'kcal未入力のためPFCから概算しました (*)' : 'いつもの書き方でそのまま送信 — 集計は自動', false);
@@ -985,6 +1000,7 @@ function submitAct() {
   else actsByDate.set(act.date, [act]);
   saveStore();
   actInput.value = '';
+  fitInput(actInput);
   actHint.textContent = `${parsed.minutes}分を記録しました`;
   actHint.classList.remove('error');
   renderRocket();
@@ -1028,6 +1044,7 @@ function submitGym() {
   else gymByDate.set(item.date, [item]);
   saveStore();
   gymInput.value = '';
+  fitInput(gymInput);
   gymHint.textContent = `${parsed.count}セットを記録しました`;
   gymHint.classList.remove('error');
   renderGym();
