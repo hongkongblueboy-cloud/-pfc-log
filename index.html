@@ -26,8 +26,8 @@
     --send: #1a1a18;
     --send-fg: #ffffff;
   }
-  body[data-screen="pfc"]    { --accent: #E8710A; }
-  body[data-screen="rocket"] { --accent: #1E7FE8; }
+  body[data-screen="pfc"]    { --accent: #1E7FE8; }
+  body[data-screen="rocket"] { --accent: #17B45E; }
   body[data-screen="gym"]    { --accent: #6A1B9A; }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -342,7 +342,7 @@
       <span class="kcal-goal" id="r-goal-label">/ 120 分</span>
       <span class="kcal-left" id="r-left"></span>
     </div>
-    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--accent)"></div></div>
+    <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--text)"></div></div>
     <div class="criteria-head">
       <span>ゆずれない3つ</span>
       <span class="streak" id="r-streak"></span>
@@ -617,7 +617,7 @@ function renderRocket() {
 
   const bar = document.getElementById('r-bar');
   bar.style.width = Math.min(100, goal > 0 ? (total / goal) * 100 : 0) + '%';
-  bar.style.background = total >= goal ? 'var(--ok)' : 'var(--accent)';
+  bar.style.background = total >= goal ? 'var(--accent)' : 'var(--text)';
 
   document.getElementById('criteria').innerHTML =
     store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
