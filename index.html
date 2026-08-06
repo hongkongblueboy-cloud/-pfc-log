@@ -132,7 +132,8 @@
   .tl-step.next .tl-dot { background: var(--ok); border-color: var(--ok); }
   .tl-step.next .tl-when { color: var(--text-2); }
   .tl-step.next .tl-what { color: var(--text); }
-  .gym-row2 { display: flex; align-items: baseline; margin-top: 2px; }
+  .gym-row2 { display: flex; align-items: baseline; margin-top: 4px; }
+  .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 13px; color: var(--text-2); }
   #g-volume, #g-distance { color: var(--text-2); white-space: pre; }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
@@ -370,10 +371,12 @@
     <div class="kcal-row">
       <span class="kcal-now" id="g-week">0</span>
       <span class="kcal-goal">日 / 週4日</span>
+      <div class="bar inline-gauge"><div id="g-week-bar"></div></div>
       <span class="kcal-left" id="g-volume"></span>
     </div>
     <div class="gym-row2">
       <span class="gym-year" id="g-year"></span>
+      <div class="bar inline-gauge"><div id="g-year-bar"></div></div>
       <span class="kcal-left" id="g-distance"></span>
     </div>
   </header>
@@ -482,6 +485,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.acts)) s.acts = [];
   if (!Array.isArray(s.gym)) s.gym = [];
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
+  if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
   if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
     s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
@@ -703,9 +707,17 @@ function renderGym() {
   const weekEl = document.getElementById('g-week');
   weekEl.textContent = days;
   weekEl.style.color = days >= 4 ? 'var(--ok)' : '';
+  const weekBar = document.getElementById('g-week-bar');
+  weekBar.style.width = Math.min(100, (days / 4) * 100) + '%';
+  weekBar.style.background = days >= 4 ? 'var(--ok)' : 'var(--bar-k)';
 
   const year = Number(viewDate.slice(0, 4));
-  document.getElementById('g-year').textContent = `今年 ${gymYearCount(year)}回`;
+  const yearCount = gymYearCount(year);
+  const yearGoal = store.gymYearGoal;
+  document.getElementById('g-year').textContent = `今年 ${yearCount}回`;
+  const yearBar = document.getElementById('g-year-bar');
+  yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
+  yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
 
   document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '';
   document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '';
