@@ -714,7 +714,7 @@ function renderGym() {
   const year = Number(viewDate.slice(0, 4));
   const yearCount = gymYearCount(year);
   const yearGoal = store.gymYearGoal;
-  document.getElementById('g-year').textContent = `今年 ${yearCount}回`;
+  document.getElementById('g-year').textContent = `今年 ${yearCount} / ${yearGoal}回`;
   const yearBar = document.getElementById('g-year-bar');
   yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
   yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
