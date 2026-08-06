@@ -719,8 +719,8 @@ function renderGym() {
   yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
   yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
 
-  document.getElementById('g-volume').textContent = `総量  ${volume.toLocaleString()}kg`;
-  document.getElementById('g-distance').textContent = `総距離  ${distance}km`;
+  document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '総量';
+  document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '総距離';
 
   const log = document.getElementById('g-log');
   if (!list.length) {
