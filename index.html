@@ -132,6 +132,7 @@
   .tl-step.next .tl-dot { background: var(--ok); border-color: var(--ok); }
   .tl-step.next .tl-when { color: var(--text-2); }
   .tl-step.next .tl-what { color: var(--text); }
+  .gym-year { font-size: 13px; color: var(--text-2); margin-top: 2px; }
   .macro-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .macro-head .label { color: var(--text-2); font-weight: 600; }
   .macro-head .val { font-weight: 600; }
@@ -361,10 +362,11 @@
       </div>
     </div>
     <div class="kcal-row">
-      <span class="kcal-now" id="g-sets">0</span>
-      <span class="kcal-goal" id="g-summary">セット</span>
+      <span class="kcal-now" id="g-week">0</span>
+      <span class="kcal-goal">日 / 週4日</span>
       <span class="kcal-left" id="g-volume"></span>
     </div>
+    <div class="gym-year" id="g-year"></div>
   </header>
   <main id="g-log"></main>
 </div>
@@ -470,6 +472,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.entries)) s.entries = [];
   if (!Array.isArray(s.acts)) s.acts = [];
   if (!Array.isArray(s.gym)) s.gym = [];
+  if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
   if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
     s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
@@ -646,16 +649,50 @@ function parseGym(text) {
   return { name, sets: setsText, count: parts.length, volume: allWeighted ? Math.round(volume) : 0 };
 }
 
+// 月曜はじまりの週の初日を返す
+function weekStart(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const back = (new Date(y, m - 1, d).getDay() + 6) % 7;
+  return todayStr(new Date(y, m - 1, d - back));
+}
+
+// 何日ジムに行ったかを数える（同じ日に何種目やっても1日）
+function gymDaysBetween(from, to) {
+  const days = new Set();
+  for (const g of store.gym) {
+    if (g.date >= from && g.date <= to) days.add(g.date);
+  }
+  return days.size;
+}
+
+// 年間累計。起点より後に記録された日を足していく。
+function gymYearCount(year) {
+  const base = store.gymBase;
+  const from = (year === base.year) ? base.asOf : `${year}-01-01`;
+  const after = new Set();
+  for (const g of store.gym) {
+    if (g.date > from && g.date <= `${year}-12-31`) after.add(g.date);
+  }
+  return (year === base.year ? base.count : 0) + after.size;
+}
+
 function renderGym() {
   const list = gymFor(viewDate);
-  const sets = list.reduce((sum, g) => sum + g.count, 0);
   const volume = list.reduce((sum, g) => sum + g.volume, 0);
 
   document.getElementById('g-date-label').textContent = formatDateLabel(viewDate);
-  document.getElementById('g-sets').textContent = sets;
-  document.getElementById('g-summary').textContent = `セット / ${list.length}種目`;
+
+  const from = weekStart(viewDate);
+  const toDate = shiftDate(from, 6);
+  const days = gymDaysBetween(from, toDate);
+  const weekEl = document.getElementById('g-week');
+  weekEl.textContent = days;
+  weekEl.style.color = days >= 4 ? 'var(--ok)' : '';
+
+  const year = Number(viewDate.slice(0, 4));
+  document.getElementById('g-year').textContent = `今年 ${gymYearCount(year)}回`;
+
   document.getElementById('g-volume').textContent = volume ? `総量 ${volume.toLocaleString()}kg` : '';
-  document.getElementById('g-volume').style.color = 'var(--text-2)';
 
   const log = document.getElementById('g-log');
   if (!list.length) {
@@ -671,6 +708,7 @@ function renderGym() {
       <button class="del" data-id="${g.id}" aria-label="削除">×</button>
     </div>`).join('');
 }
+
 
 function renderRocket() {
   const goal = store.actGoal;
