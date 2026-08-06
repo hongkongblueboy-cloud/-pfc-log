@@ -316,7 +316,7 @@
     <span class="kcal-goal" id="kcal-goal">/ 2100 kcal</span>
     <span class="kcal-left" id="kcal-left"></span>
   </div>
-  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--accent)"></div></div>
+  <div class="bar kcal-bar"><div id="kcal-bar" style="width:0%; background:var(--text)"></div></div>
   <div class="macros">
     <div class="macro" id="macro-p"></div>
     <div class="macro" id="macro-f"></div>
@@ -709,7 +709,7 @@ function render() {
 
   const kcalBar = document.getElementById('kcal-bar');
   kcalBar.style.width = Math.min(100, kpi.k > 0 ? (total.k / kpi.k) * 100 : 0) + '%';
-  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--accent)';
+  kcalBar.style.background = total.k > kpi.k ? 'var(--over)' : 'var(--text)';
 
   document.getElementById('macro-p').innerHTML = macroHtml('P', total.p, kpi.p, 'var(--bar-p)');
   document.getElementById('macro-f').innerHTML = macroHtml('F', total.f, kpi.f, 'var(--bar-f)');
