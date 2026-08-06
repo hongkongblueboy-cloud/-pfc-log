@@ -352,7 +352,21 @@
 </div>
 
 <div class="view" id="view-gym">
-  <main><div class="empty"><b>GYM</b><br>この画面の中身はこれから作ります</div></main>
+  <header>
+    <div class="header-top">
+      <div class="date-nav">
+        <button id="g-prev-day" aria-label="前の日">‹</button>
+        <div class="date-label" id="g-date-label"></div>
+        <button id="g-next-day" aria-label="次の日">›</button>
+      </div>
+    </div>
+    <div class="kcal-row">
+      <span class="kcal-now" id="g-sets">0</span>
+      <span class="kcal-goal" id="g-summary">セット</span>
+      <span class="kcal-left" id="g-volume"></span>
+    </div>
+  </header>
+  <main id="g-log"></main>
 </div>
 
 <div class="bottom">
@@ -383,6 +397,13 @@
     <button id="act-send" class="send-btn" aria-label="追加">↑</button>
   </div>
   <div class="hint" id="act-hint">活動名と開始・終了時刻を並べて送信 — 分数は自動</div>
+</footer>
+<footer id="gym-footer" hidden>
+  <div class="input-row">
+    <textarea id="gym-input" class="line-input" rows="1" placeholder="フライ 20×10→16×10" autocomplete="off" enterkeyhint="send"></textarea>
+    <button id="gym-send" class="send-btn" aria-label="追加">↑</button>
+  </div>
+  <div class="hint" id="gym-hint">種目名と重量×回数を並べて送信 — 区切りは , でも → でも可</div>
 </footer>
 <nav class="tabbar" id="tabbar">
   <button class="tab" data-view="pfc">PFC</button>
@@ -448,6 +469,7 @@ function normalizeStore(s) {
   if (!s.kpi || typeof s.kpi !== 'object') s.kpi = { k: 2100, p: 175, f: 55, c: 225 };
   if (!Array.isArray(s.entries)) s.entries = [];
   if (!Array.isArray(s.acts)) s.acts = [];
+  if (!Array.isArray(s.gym)) s.gym = [];
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
   if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
     s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
@@ -490,6 +512,21 @@ function indexActs() {
 
 function actsFor(dateStr) {
   return actsByDate.get(dateStr) || [];
+}
+
+let gymByDate = new Map();
+
+function indexGym() {
+  gymByDate = new Map();
+  for (const g of store.gym) {
+    const list = gymByDate.get(g.date);
+    if (list) list.push(g);
+    else gymByDate.set(g.date, [g]);
+  }
+}
+
+function gymFor(dateStr) {
+  return gymByDate.get(dateStr) || [];
 }
 
 let store = loadStore();
@@ -588,6 +625,51 @@ function streakDays() {
     d = shiftDate(d, -1);
   }
   return n;
+}
+
+// 「フライ 20×10→16×10」のような書き方をそのまま受ける。表記は崩さず保存する。
+function parseGym(text) {
+  const raw = text.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  const i = raw.search(/\d/);
+  if (i <= 0) return null;
+  const name = raw.slice(0, i).trim();
+  const setsText = raw.slice(i).trim();
+  if (!name || !setsText) return null;
+
+  const parts = setsText.split(/[,、，]|→|->/).map(x => x.trim()).filter(Boolean);
+  let volume = 0, allWeighted = true;
+  for (const part of parts) {
+    const m = part.match(/^(\d+(?:\.\d+)?)\s*[×xX*✕]\s*(\d+(?:\.\d+)?)/);
+    if (m) volume += parseFloat(m[1]) * parseFloat(m[2]);
+    else allWeighted = false;
+  }
+  return { name, sets: setsText, count: parts.length, volume: allWeighted ? Math.round(volume) : 0 };
+}
+
+function renderGym() {
+  const list = gymFor(viewDate);
+  const sets = list.reduce((sum, g) => sum + g.count, 0);
+  const volume = list.reduce((sum, g) => sum + g.volume, 0);
+
+  document.getElementById('g-date-label').textContent = formatDateLabel(viewDate);
+  document.getElementById('g-sets').textContent = sets;
+  document.getElementById('g-summary').textContent = `セット / ${list.length}種目`;
+  document.getElementById('g-volume').textContent = volume ? `総量 ${volume.toLocaleString()}kg` : '';
+  document.getElementById('g-volume').style.color = 'var(--text-2)';
+
+  const log = document.getElementById('g-log');
+  if (!list.length) {
+    log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「フライ 20×10→16×10」のように入力</div>`;
+    return;
+  }
+  log.innerHTML = list.map(g => `
+    <div class="entry">
+      <div class="body">
+        <span class="name">${escapeHtml(g.name)}</span>
+        <span class="pfc mono">${escapeHtml(g.sets)}   ${g.count}セット</span>
+      </div>
+      <button class="del" data-id="${g.id}" aria-label="削除">×</button>
+    </div>`).join('');
 }
 
 function renderRocket() {
@@ -872,6 +954,7 @@ function goToDate(dateStr) {
   viewDate = dateStr;
   render();
   renderRocket();
+  renderGym();
 }
 document.getElementById('prev-day').addEventListener('click', () => goToDate(shiftDate(viewDate, -1)));
 document.getElementById('next-day').addEventListener('click', () => goToDate(shiftDate(viewDate, 1)));
@@ -925,6 +1008,50 @@ document.getElementById('r-log').addEventListener('click', e => {
 
 document.getElementById('r-goal-open').addEventListener('click', () => openSettings());
 
+const gymInput = document.getElementById('gym-input');
+const gymHint = document.getElementById('gym-hint');
+const GYM_HINT = '種目名と重量×回数を並べて送信 — 区切りは , でも → でも可';
+
+function submitGym() {
+  const text = gymInput.value;
+  if (!text.trim()) return;
+  const parsed = parseGym(text);
+  if (!parsed) {
+    gymHint.textContent = '読み取れませんでした。「フライ 20×10→16×10」の形式で入力';
+    gymHint.classList.add('error');
+    return;
+  }
+  const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate, ...parsed };
+  store.gym.push(item);
+  const bucket = gymByDate.get(item.date);
+  if (bucket) bucket.push(item);
+  else gymByDate.set(item.date, [item]);
+  saveStore();
+  gymInput.value = '';
+  gymHint.textContent = `${parsed.count}セットを記録しました`;
+  gymHint.classList.remove('error');
+  renderGym();
+}
+
+document.getElementById('gym-send').addEventListener('click', submitGym);
+gymInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+  e.preventDefault();
+  submitGym();
+});
+
+document.getElementById('g-log').addEventListener('click', e => {
+  const btn = e.target.closest('.del');
+  if (!btn) return;
+  store.gym = store.gym.filter(g => g.id !== btn.dataset.id);
+  indexGym();
+  saveStore();
+  renderGym();
+});
+
+document.getElementById('g-prev-day').addEventListener('click', () => goToDate(shiftDate(viewDate, -1)));
+document.getElementById('g-next-day').addEventListener('click', () => goToDate(shiftDate(viewDate, 1)));
+
 const backupExport = document.getElementById('backup-export');
 const backupImport = document.getElementById('backup-import');
 const backupFile = document.getElementById('backup-file');
@@ -973,10 +1100,12 @@ backupImport.addEventListener('click', () => {
     store = pendingRestore;
     indexEntries();
     indexActs();
+    indexGym();
     saveStore();
     resetBackupUI();
     noteBackup('復元しました。', false);
     renderRocket();
+    renderGym();
     render();
     return;
   }
@@ -1045,17 +1174,20 @@ document.getElementById('kpi-save').addEventListener('click', () => {
   dialog.close();
   render();
   renderRocket();
+  renderGym();
 });
 
 const tabbar = document.getElementById('tabbar');
 const pfcFooter = document.getElementById('pfc-footer');
 const rocketFooter = document.getElementById('rocket-footer');
+const gymFooter = document.getElementById('gym-footer');
 
 function setView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   tabbar.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === name));
   pfcFooter.hidden = name !== 'pfc';
   rocketFooter.hidden = name !== 'rocket';
+  gymFooter.hidden = name !== 'gym';
 }
 
 tabbar.addEventListener('click', e => {
@@ -1066,8 +1198,10 @@ tabbar.addEventListener('click', e => {
 setView('pfc');
 indexEntries();
 indexActs();
+indexGym();
 render();
 renderRocket();
+renderGym();
 
 // アプリ本体を端末にキャッシュして、起動時に通信の完了を待たないようにする。
 if ('serviceWorker' in navigator) {
