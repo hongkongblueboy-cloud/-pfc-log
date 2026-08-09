@@ -372,7 +372,7 @@
     </div>
     <div class="kcal-row">
       <span class="kcal-now" id="g-week">0</span>
-      <span class="kcal-goal">日 / 週4日</span>
+      <span class="kcal-goal">/ 週4</span>
       <div class="bar inline-gauge"><div id="g-week-bar"></div></div>
       <span class="kcal-left" id="g-volume"></span>
     </div>
@@ -722,7 +722,7 @@ function renderGym() {
   const year = Number(viewDate.slice(0, 4));
   const yearCount = gymYearCount(year);
   const yearGoal = store.gymYearGoal;
-  document.getElementById('g-year').textContent = `今年 ${yearCount} / ${yearGoal}回`;
+  document.getElementById('g-year').textContent = `${yearCount} / ${yearGoal}回`;
   const yearBar = document.getElementById('g-year-bar');
   yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
   yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
