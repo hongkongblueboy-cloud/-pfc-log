@@ -419,6 +419,7 @@
     <textarea id="gym-input" class="line-input" rows="1" placeholder="フライ 20×10→16×10" autocomplete="off" enterkeyhint="enter"></textarea>
     <button id="gym-send" class="send-btn" aria-label="追加">↑</button>
   </div>
+  <div class="recent-row" id="gym-todo"></div>
   <div class="hint" id="gym-hint">種目名と重量×回数を並べて送信 — 区切りは , でも → でも可</div>
 </footer>
 <nav class="tabbar" id="tabbar">
@@ -696,6 +697,30 @@ function gymYearCount(year) {
   return (year === base.year ? base.count : 0) + after.size;
 }
 
+const EXERCISES = ['フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル'];
+
+// 一昨日から今日までに出てこなかった種目を出す
+function renderGymTodo() {
+  const from = shiftDate(viewDate, -2);
+  const done = new Set();
+  for (const g of store.gym) {
+    if (g.date >= from && g.date <= viewDate) done.add(g.name);
+  }
+  const missing = EXERCISES.filter(name => ![...done].some(d => d.includes(name) || name.includes(d)));
+  const row = document.getElementById('gym-todo');
+  row.style.display = missing.length ? 'flex' : 'none';
+  row.innerHTML = missing.map(n => `<button class="recent-chip">${escapeHtml(n)}</button>`).join('');
+}
+
+document.getElementById('gym-todo').addEventListener('click', e => {
+  const chip = e.target.closest('.recent-chip');
+  if (!chip) return;
+  const el = document.getElementById('gym-input');
+  el.value = chip.textContent + ' ';
+  el.focus();
+  fitInput(el);
+});
+
 function renderGym() {
   const list = gymFor(viewDate);
   const volume = list.reduce((sum, g) => sum + g.volume, 0);
@@ -731,6 +756,8 @@ function renderGym() {
 
   document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '総量';
   document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '総距離';
+
+  renderGymTodo();
 
   const log = document.getElementById('g-log');
   if (!list.length) {
