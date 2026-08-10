@@ -739,6 +739,7 @@ function renderGym() {
   }
   log.innerHTML = list.map(g => `
     <div class="entry">
+      <span class="time">${g.time || ''}</span>
       <div class="body">
         <span class="name">${escapeHtml(g.name)}</span>
         <span class="sets mono">${escapeHtml(g.sets)}</span>
@@ -1113,7 +1114,9 @@ function submitGym() {
     gymHint.classList.add('error');
     return;
   }
-  const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate, ...parsed };
+  const now = new Date();
+  const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
+    time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, ...parsed };
   store.gym.push(item);
   const bucket = gymByDate.get(item.date);
   if (bucket) bucket.push(item);
