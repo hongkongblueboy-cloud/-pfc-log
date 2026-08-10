@@ -252,6 +252,7 @@
   .recent-row::-webkit-scrollbar { display: none; }
   #gym-todo { flex-wrap: wrap; overflow-x: visible; row-gap: 6px; }
   #gym-todo .recent-chip { background: var(--text-3); color: #fff; border-color: var(--text-3); }
+  .recent-chip.pinned { background: var(--row); color: var(--text-2); border-color: var(--border); }
   .recent-chip {
     flex-shrink: 0; padding: 6px 12px; border-radius: 16px;
     background: var(--card); border: 0.5px solid var(--border);
@@ -490,7 +491,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.entries)) s.entries = [];
   if (!Array.isArray(s.acts)) s.acts = [];
   if (!Array.isArray(s.gym)) s.gym = [];
-  if (!Array.isArray(s.hiddenFoods)) s.hiddenFoods = [];
+  if (!Array.isArray(s.pinnedFoods)) s.pinnedFoods = [];
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
@@ -923,12 +924,12 @@ function render() {
 function recentFoods() {
   if (recentCache) return recentCache;
   const seen = new Set();
-  const out = [];
+  const out = store.pinnedFoods.map(f => ({ ...f, pinned: true }));
+  out.forEach(f => seen.add(f.name));
   for (let i = store.entries.length - 1; i >= 0 && out.length < 30; i--) {
     const e = store.entries[i];
     if (seen.has(e.name)) continue;
     seen.add(e.name);
-    if (store.hiddenFoods.includes(e.name)) continue;
     let { k, p, f, c } = e;
     if (e.mult && e.mult !== 1) {
       k = Math.round(k / e.mult);
@@ -946,7 +947,7 @@ function renderRecents() {
   const row = document.getElementById('recent-row');
   const foods = recentFoods();
   row.style.display = foods.length ? 'flex' : 'none';
-  row.innerHTML = foods.map((r, i) => `<button class="recent-chip" data-i="${i}">${escapeHtml(r.name)}</button>`).join('');
+  row.innerHTML = foods.map((r, i) => `<button class="recent-chip${r.pinned ? ' pinned' : ''}" data-i="${i}">${escapeHtml(r.name)}</button>`).join('');
   row._foods = foods;
 }
 
@@ -961,9 +962,14 @@ recentRow.addEventListener('pointerdown', e => {
   chipTimer = setTimeout(() => {
     chipTimer = null;
     chipRemoved = true;
-    const name = chip.textContent;
-    if (!confirm(`「${name}」を候補から消しますか`)) return;
-    store.hiddenFoods.push(name);
+    const food = recentRow._foods[Number(chip.dataset.i)];
+    if (!food) return;
+    if (food.pinned) {
+      if (!confirm(`「${food.name}」の固定を解除しますか`)) return;
+      store.pinnedFoods = store.pinnedFoods.filter(f => f.name !== food.name);
+    } else {
+      store.pinnedFoods.push({ name: food.name, k: food.k, p: food.p, f: food.f, c: food.c });
+    }
     recentCache = null;
     saveStore();
     render();
