@@ -416,7 +416,7 @@
 </footer>
 <footer id="gym-footer" hidden>
   <div class="input-row">
-    <textarea id="gym-input" class="line-input" rows="1" placeholder="フライ 20×10→16×10" autocomplete="off" enterkeyhint="send"></textarea>
+    <textarea id="gym-input" class="line-input" rows="1" placeholder="フライ 20×10→16×10" autocomplete="off" enterkeyhint="enter"></textarea>
     <button id="gym-send" class="send-btn" aria-label="追加">↑</button>
   </div>
   <div class="hint" id="gym-hint">種目名と重量×回数を並べて送信 — 区切りは , でも → でも可</div>
@@ -654,7 +654,7 @@ function parseGym(text) {
   const setsText = raw.slice(i).trim();
   if (!name || !setsText) return null;
 
-  const parts = setsText.split(/[,、，]|→|->/).map(x => x.trim()).filter(Boolean);
+  const parts = setsText.split(/[,、，\n]|→|->/).map(x => x.trim()).filter(Boolean);
   let volume = 0, allWeighted = true;
   for (const part of parts) {
     const m = part.match(/^(\d+(?:\.\d+)?)\s*[×xX*✕]\s*(\d+(?:\.\d+)?)/);
@@ -1125,11 +1125,6 @@ function submitGym() {
 }
 
 document.getElementById('gym-send').addEventListener('click', submitGym);
-gymInput.addEventListener('keydown', e => {
-  if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
-  e.preventDefault();
-  submitGym();
-});
 
 document.getElementById('g-log').addEventListener('click', e => {
   const btn = e.target.closest('.del');
