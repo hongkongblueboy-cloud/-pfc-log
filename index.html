@@ -492,6 +492,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.acts)) s.acts = [];
   if (!Array.isArray(s.gym)) s.gym = [];
   if (!Array.isArray(s.pinnedFoods)) s.pinnedFoods = [];
+  if (!Array.isArray(s.hiddenFoods)) s.hiddenFoods = [];
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
@@ -930,6 +931,7 @@ function recentFoods() {
     const e = store.entries[i];
     if (seen.has(e.name)) continue;
     seen.add(e.name);
+    if (store.hiddenFoods.includes(e.name)) continue;
     let { k, p, f, c } = e;
     if (e.mult && e.mult !== 1) {
       k = Math.round(k / e.mult);
@@ -967,8 +969,12 @@ recentRow.addEventListener('pointerdown', e => {
     if (food.pinned) {
       if (!confirm(`「${food.name}」の固定を解除しますか`)) return;
       store.pinnedFoods = store.pinnedFoods.filter(f => f.name !== food.name);
-    } else {
+    } else if (confirm(`「${food.name}」を固定しますか（キャンセルすると削除に進みます）`)) {
       store.pinnedFoods.push({ name: food.name, k: food.k, p: food.p, f: food.f, c: food.c });
+    } else if (confirm(`「${food.name}」を候補から消しますか`)) {
+      store.hiddenFoods.push(food.name);
+    } else {
+      return;
     }
     recentCache = null;
     saveStore();
