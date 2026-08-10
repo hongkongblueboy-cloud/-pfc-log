@@ -882,7 +882,7 @@ function render() {
   const kpi = store.kpi;
   const entries = entriesFor(viewDate);
   const raw = entries.reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p, f: a.f + e.f, c: a.c + e.c }), { k: 0, p: 0, f: 0, c: 0 });
-  const total = { k: round5(raw.k), p: round5(raw.p), f: round5(raw.f), c: round5(raw.c) };
+  const total = { k: round5(raw.k), p: raw.p, f: raw.f, c: raw.c };
 
   document.getElementById('date-label').textContent = formatDateLabel(viewDate);
   document.getElementById('kpi-open').textContent = `KPI  ${kpi.k}k   p${kpi.p}   f${kpi.f}   c${kpi.c}`;
