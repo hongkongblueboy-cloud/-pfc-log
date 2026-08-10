@@ -490,6 +490,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.entries)) s.entries = [];
   if (!Array.isArray(s.acts)) s.acts = [];
   if (!Array.isArray(s.gym)) s.gym = [];
+  if (!Array.isArray(s.hiddenFoods)) s.hiddenFoods = [];
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
@@ -927,6 +928,7 @@ function recentFoods() {
     const e = store.entries[i];
     if (seen.has(e.name)) continue;
     seen.add(e.name);
+    if (store.hiddenFoods.includes(e.name)) continue;
     let { k, p, f, c } = e;
     if (e.mult && e.mult !== 1) {
       k = Math.round(k / e.mult);
@@ -948,7 +950,30 @@ function renderRecents() {
   row._foods = foods;
 }
 
+// 長押しで候補から消す
+let chipTimer = null, chipRemoved = false;
+const recentRow = document.getElementById('recent-row');
+
+recentRow.addEventListener('pointerdown', e => {
+  const chip = e.target.closest('.recent-chip');
+  if (!chip) return;
+  chipRemoved = false;
+  chipTimer = setTimeout(() => {
+    chipTimer = null;
+    chipRemoved = true;
+    const name = chip.textContent;
+    if (!confirm(`「${name}」を候補から消しますか`)) return;
+    store.hiddenFoods.push(name);
+    recentCache = null;
+    saveStore();
+    render();
+  }, 500);
+});
+['pointerup', 'pointercancel', 'pointerleave', 'pointermove'].forEach(t =>
+  recentRow.addEventListener(t, () => { if (chipTimer) { clearTimeout(chipTimer); chipTimer = null; } }));
+
 document.getElementById('recent-row').addEventListener('click', e => {
+  if (chipRemoved) { chipRemoved = false; return; }
   const chip = e.target.closest('.recent-chip');
   if (!chip) return;
   const r = document.getElementById('recent-row')._foods[Number(chip.dataset.i)];
