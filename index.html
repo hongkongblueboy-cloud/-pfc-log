@@ -156,6 +156,7 @@
   .empty-hint { display: block; margin-top: 10px; font-size: 11px; }
   .entry { display: flex; align-items: center; gap: 10px; }
   .entry .time { font-size: 11px; color: var(--text-3); min-width: 36px; text-align: right; }
+  .entry .time.edit { cursor: pointer; text-decoration: underline; text-decoration-color: var(--border); }
   .entry .body {
     flex: 1; display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; row-gap: 2px;
@@ -905,7 +906,7 @@ function render() {
   }
   log.innerHTML = entries.map(e => `
     <div class="entry">
-      <span class="time">${e.time}</span>
+      <span class="time edit" data-id="${e.id}">${e.time}</span>
       <div class="body">
         <span class="name">${escapeHtml(e.name)}${e.mult && e.mult !== 1 ? `<span class="mult-badge">×${e.mult}</span>` : ''}</span>
         <span class="pfc mono">${fmt(e.k)}k${e.estimated ? '*' : ''}   p${fmt(e.p)}   f${fmt(e.f)}   c${fmt(e.c)}</span>
@@ -1062,6 +1063,19 @@ input.addEventListener('keydown', e => {
 });
 
 document.getElementById('log').addEventListener('click', e => {
+  const t = e.target.closest('.time.edit');
+  if (t) {
+    const entry = store.entries.find(en => en.id === t.dataset.id);
+    if (!entry) return;
+    const input = prompt('時刻を編集 (例 12:30)', entry.time);
+    if (input === null) return;
+    const m = input.trim().match(/^(\d{1,2}):?(\d{2})$/);
+    if (!m || +m[1] > 23 || +m[2] > 59) { showHint('時刻は 12:30 の形式で入力', true); return; }
+    entry.time = `${m[1].padStart(2, '0')}:${m[2]}`;
+    saveStore();
+    render();
+    return;
+  }
   const btn = e.target.closest('.del');
   if (!btn) return;
   store.entries = store.entries.filter(en => en.id !== btn.dataset.id);
