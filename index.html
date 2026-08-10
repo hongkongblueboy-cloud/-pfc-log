@@ -713,7 +713,9 @@ function renderGym() {
 
   const weekEl = document.getElementById('g-week');
   weekEl.textContent = days;
-  weekEl.style.color = days >= 4 ? 'var(--ok)' : (days < need ? 'var(--over)' : '');
+  const GOOD = [4, 1, 2, 3, 4, 4, 4]; // 日 月 火 水 木 金 土
+  const good = GOOD[new Date(vy, vm - 1, vd).getDay()];
+  weekEl.style.color = days >= good ? 'var(--ok)' : (days < need ? 'var(--over)' : '');
 
   const weekBar = document.getElementById('g-week-bar');
   weekBar.style.width = Math.min(100, (days / 4) * 100) + '%';
