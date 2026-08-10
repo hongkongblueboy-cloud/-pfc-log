@@ -719,7 +719,7 @@ function renderGym() {
 
   const weekBar = document.getElementById('g-week-bar');
   weekBar.style.width = Math.min(100, (days / 4) * 100) + '%';
-  weekBar.style.background = days >= 4 ? 'var(--ok)' : 'var(--bar-k)';
+  weekBar.style.background = days >= good ? 'var(--ok)' : 'var(--bar-k)';
 
   const year = Number(viewDate.slice(0, 4));
   const yearCount = gymYearCount(year);
