@@ -931,7 +931,8 @@ function recentFoods() {
     const e = store.entries[i];
     if (seen.has(e.name)) continue;
     seen.add(e.name);
-    if (store.hiddenFoods.includes(e.name)) continue;
+    const hidden = store.hiddenFoods.find(h => h.name === e.name);
+    if (hidden && hidden.id === e.id) continue;
     let { k, p, f, c } = e;
     if (e.mult && e.mult !== 1) {
       k = Math.round(k / e.mult);
@@ -972,7 +973,9 @@ recentRow.addEventListener('pointerdown', e => {
     } else if (confirm(`「${food.name}」を固定しますか（キャンセルすると削除に進みます）`)) {
       store.pinnedFoods.push({ name: food.name, k: food.k, p: food.p, f: food.f, c: food.c });
     } else if (confirm(`「${food.name}」を候補から消しますか`)) {
-      store.hiddenFoods.push(food.name);
+      const newest = [...store.entries].reverse().find(en => en.name === food.name);
+      store.hiddenFoods = store.hiddenFoods.filter(h => h.name !== food.name);
+      if (newest) store.hiddenFoods.push({ name: food.name, id: newest.id });
     } else {
       return;
     }
