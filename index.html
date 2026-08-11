@@ -138,7 +138,6 @@
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 16px; color: var(--text-2); }
   #g-volume, #g-distance { color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; }
-  .safe-cover { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg); z-index: 4; }
   .plan-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
   .plan-input { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
   .plan-input input { width: 76px; border: 0.5px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; padding: 7px 10px; border-radius: 8px; outline: none; }
@@ -149,11 +148,20 @@
     color: var(--text-2); font-family: inherit; font-size: 13px; font-weight: 600;
   }
   .plan-tab.on { background: var(--text); color: var(--card); border-color: var(--text); }
-  .plan { width: 100%; border-collapse: collapse; font-size: 12px; }
+  #view-body header { padding: calc(env(safe-area-inset-top) + 12px) 16px 0; }
+  #view-body main { padding-top: 0; }
+  .plan { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .plan col-w1 { }
   .plan th, .plan td { padding: 7px 6px; text-align: right; white-space: nowrap; border-bottom: 0.5px solid var(--border); }
+  .plan th:nth-child(1), .plan td:nth-child(1) { width: 15%; }
+  .plan th:nth-child(2), .plan td:nth-child(2) { width: 13%; }
+  .plan th:nth-child(3), .plan td:nth-child(3) { width: 15%; }
+  .plan th:nth-child(4), .plan td:nth-child(4) { width: 14%; }
+  .plan th:nth-child(5), .plan td:nth-child(5) { width: 16%; }
+  .plan th:nth-child(6), .plan td:nth-child(6) { width: 14%; }
+  .plan th:nth-child(7), .plan td:nth-child(7) { width: 13%; }
   .plan th {
     color: var(--text); font-weight: 600; font-size: 12px; text-align: right;
-    position: sticky; top: env(safe-area-inset-top); z-index: 3; background: var(--bg);
   }
   .plan td:first-child, .plan th:first-child { text-align: left; }
   .plan td:nth-child(4) { padding-left: 16px; }
@@ -416,7 +424,7 @@
 </div>
 
 <div class="view" id="view-body">
-  <div class="safe-cover"></div>
+  <header id="b-head"></header>
   <main id="b-log"></main>
 </div>
 
@@ -785,7 +793,7 @@ function renderBody() {
   // その週が始まった行を強調する（次の行の日付が来るまでは手前の行）
   let nowIdx = 0;
   PLAN_SEL.forEach((r, i) => { if (r.d <= today) nowIdx = i; });
-  document.getElementById('b-log').innerHTML = `
+  document.getElementById('b-head').innerHTML = `
     <div class="plan-tabs">
       <button class="plan-tab${planView === 'old' ? ' on' : ''}" data-plan="old">従来の目標</button>
       <button class="plan-tab${planView === 'new' ? ' on' : ''}" data-plan="new">修正目標</button>
@@ -796,22 +804,24 @@ function renderBody() {
       <span>kg</span>
       <button id="b-apply">反映</button>
     </div>` : ''}
+    <table class="plan"><tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr></table>`;
+
+  document.getElementById('b-log').innerHTML = `
     <table class="plan">
-      <thead><tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr></thead>
       ${PLAN_SEL.map((r, i) => `<tr class="${i === nowIdx ? 'now' : (i < nowIdx ? 'past' : '')}">
         <td>${r.d.slice(5).replace('-', '/')}</td><td>${r.kg.toFixed(1)}</td><td>${r.bf}%</td>
         <td>${r.kcal}</td><td>${r.waist}</td><td>${r.thigh}</td><td>${r.size}</td></tr>`).join('')}
     </table>`;
 }
 
-document.getElementById('b-log').addEventListener('click', e => {
+document.getElementById('b-head').addEventListener('click', e => {
   const b = e.target.closest('.plan-tab');
   if (!b) return;
   planView = b.dataset.plan;
   renderBody();
 });
 
-document.getElementById('b-log').addEventListener('click', e => {
+document.getElementById('b-head').addEventListener('click', e => {
   if (!e.target.closest('#b-apply')) return;
   const kg = Number(document.getElementById('b-kg').value);
   if (!(kg > 30 && kg < 300)) return;
