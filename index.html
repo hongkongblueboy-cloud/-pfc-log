@@ -914,10 +914,10 @@ function renderWeekly() {
     </div>
     <div class="wk-card">
       <div class="wk-stats" style="grid-template-columns: repeat(4, 1fr)">
-        <div class="wk-stat"><span>平均kcal</span><b>${kcalAvg}</b></div>
-        <div class="wk-stat"><span>平均P</span><b>${logged ? Math.round(sum.p / logged) : 0}</b></div>
-        <div class="wk-stat"><span>平均F</span><b>${logged ? Math.round(sum.f / logged) : 0}</b></div>
-        <div class="wk-stat"><span>平均C</span><b>${logged ? Math.round(sum.c / logged) : 0}</b></div>
+        <div class="wk-stat"><span>Ave. kcal</span><b>${kcalAvg}</b></div>
+        <div class="wk-stat"><span>Ave. P</span><b>${logged ? Math.round(sum.p / logged) : 0}</b></div>
+        <div class="wk-stat"><span>Ave. F</span><b>${logged ? Math.round(sum.f / logged) : 0}</b></div>
+        <div class="wk-stat"><span>Ave. C</span><b>${logged ? Math.round(sum.c / logged) : 0}</b></div>
       </div>
     </div>
     <div class="wk-card">
@@ -925,7 +925,7 @@ function renderWeekly() {
       <div class="wk-stats">
         <div class="wk-stat"><span>活動時間</span><b>${actMin}分</b></div>
         <div class="wk-stat"><span>活動した日</span><b>${actDays}</b></div>
-        <div class="wk-stat"><span>1日平均</span><b>${Math.round(actMin / 7)}分</b></div>
+        <div class="wk-stat"><span>Ave. 分/日</span><b>${Math.round(actMin / 7)}分</b></div>
       </div>
     </div>
     <div class="wk-card">
