@@ -138,6 +138,7 @@
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 16px; color: var(--text-2); }
   #g-volume, #g-distance { color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; }
+  .safe-cover { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg); z-index: 4; }
   .plan-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
   .plan-input { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
   .plan-input input { width: 76px; border: 0.5px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; padding: 7px 10px; border-radius: 8px; outline: none; }
@@ -153,7 +154,6 @@
   .plan th {
     color: var(--text); font-weight: 600; font-size: 12px; text-align: right;
     position: sticky; top: env(safe-area-inset-top); z-index: 3; background: var(--bg);
-    box-shadow: 0 -120px 0 var(--bg);
   }
   .plan td:first-child, .plan th:first-child { text-align: left; }
   .plan td:nth-child(4) { padding-left: 16px; }
@@ -412,6 +412,7 @@
 </div>
 
 <div class="view" id="view-body">
+  <div class="safe-cover"></div>
   <main id="b-log"></main>
 </div>
 
