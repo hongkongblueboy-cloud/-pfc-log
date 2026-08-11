@@ -908,6 +908,14 @@ function renderWeekly() {
   const sGym = Math.round(30 * clamp(gymDays / 4));
   const score = sFood + sRocket + sGym;
 
+  // 目標を超えたら赤、収まっていれば青（Pだけ逆）
+  const BLUE = '#185FA5', RED = 'var(--over)';
+  const under = (v, goal) => (v > goal ? RED : BLUE);
+  const over = (v, goal) => (v >= goal ? BLUE : RED);
+  const avgPv = logged ? Math.round(sum.p / logged) : 0;
+  const avgFv = logged ? Math.round(sum.f / logged) : 0;
+  const avgCv = logged ? Math.round(sum.c / logged) : 0;
+
   const maxK = Math.max(store.kpi.k, ...perDay.map(d => d.k)) || 1;
   const bars = perDay.map((d, i) => `<div class="wk-bar">
       <i style="height:${Math.round(d.k / maxK * 86)}px; background:${d.k > store.kpi.k ? 'var(--over)' : 'var(--text)'}"></i>
@@ -929,10 +937,10 @@ function renderWeekly() {
     </div>
     <div class="wk-card">
       <div class="wk-stats" style="grid-template-columns: repeat(4, 1fr)">
-        <div class="wk-stat"><span>Ave. kcal</span><b>${kcalAvg}</b></div>
-        <div class="wk-stat"><span>Ave. P</span><b>${logged ? Math.round(sum.p / logged) : 0}</b></div>
-        <div class="wk-stat"><span>Ave. F</span><b>${logged ? Math.round(sum.f / logged) : 0}</b></div>
-        <div class="wk-stat"><span>Ave. C</span><b>${logged ? Math.round(sum.c / logged) : 0}</b></div>
+        <div class="wk-stat"><span>Ave. kcal</span><b style="color:${under(kcalAvg, store.kpi.k)}">${kcalAvg}</b></div>
+        <div class="wk-stat"><span>Ave. P</span><b style="color:${over(avgPv, store.kpi.p)}">${avgPv}</b></div>
+        <div class="wk-stat"><span>Ave. F</span><b style="color:${under(avgFv, store.kpi.f)}">${avgFv}</b></div>
+        <div class="wk-stat"><span>Ave. C</span><b style="color:${under(avgCv, store.kpi.c)}">${avgCv}</b></div>
       </div>
     </div>
     <div class="wk-card">
