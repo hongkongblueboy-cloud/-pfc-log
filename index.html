@@ -147,7 +147,10 @@
   .plan-tab.on { background: var(--text); color: var(--card); border-color: var(--text); }
   .plan { width: 100%; border-collapse: collapse; font-size: 12px; }
   .plan th, .plan td { padding: 7px 6px; text-align: right; white-space: nowrap; border-bottom: 0.5px solid var(--border); }
-  .plan th { color: var(--text-3); font-weight: 600; font-size: 11px; text-align: right; }
+  .plan th {
+    color: var(--text-3); font-weight: 600; font-size: 11px; text-align: right;
+    position: sticky; top: 0; z-index: 1; background: var(--bg);
+  }
   .plan td:first-child, .plan th:first-child { text-align: left; }
   .plan tr.now td { background: var(--row); font-weight: 600; color: var(--text); }
   .plan tr.past td { color: var(--text-3); }
@@ -741,7 +744,7 @@ function renderBody() {
       <button class="plan-tab${planView === 'new' ? ' on' : ''}" data-plan="new">修正目標</button>
     </div>
     <table class="plan">
-      <tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr>
+      <thead><tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr></thead>
       ${PLAN_SEL.map((r, i) => `<tr class="${i === nowIdx ? 'now' : (i < nowIdx ? 'past' : '')}">
         <td>${r.d.slice(5).replace('-', '/')}</td><td>${r.kg.toFixed(1)}</td><td>${r.bf}%</td>
         <td>${r.kcal}</td><td>${r.waist}</td><td>${r.thigh}</td><td>${r.size}</td></tr>`).join('')}
