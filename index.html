@@ -138,6 +138,21 @@
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 16px; color: var(--text-2); }
   #g-volume, #g-distance { color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; }
+  .wk-card { background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .wk-title { font-size: 11px; letter-spacing: 0.08em; color: var(--text-3); margin-bottom: 10px; }
+  .wk-row { display: flex; align-items: center; gap: 16px; }
+  .wk-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .wk-legend div { display: flex; align-items: center; gap: 8px; }
+  .wk-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .wk-legend b { margin-left: auto; font-weight: 600; }
+  .wk-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .wk-stat { text-align: center; }
+  .wk-stat span { display: block; font-size: 11px; color: var(--text-3); margin-bottom: 2px; }
+  .wk-stat b { font-size: 19px; font-weight: 700; }
+  .wk-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; }
+  .wk-bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; gap: 4px; }
+  .wk-bar i { display: block; border-radius: 3px 3px 0 0; background: var(--text); }
+  .wk-bar em { font-style: normal; font-size: 10px; color: var(--text-3); text-align: center; }
   .plan-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
   .plan-input { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
   .plan-input input { width: 76px; border: 0.5px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; padding: 7px 10px; border-radius: 8px; outline: none; }
@@ -234,6 +249,7 @@
   .tab[data-view="rocket"].active { border-top-color: #17B45E; }
   .tab[data-view="gym"].active { border-top-color: #6A1B9A; }
   .tab[data-view="body"].active { border-top-color: #E8710A; }
+  .tab[data-view="weekly"].active { border-top-color: #0E9AA7; }
   .input-row { display: flex; align-items: flex-end; gap: 8px; }
   #mult-btn {
     height: 40px; min-width: 48px; padding: 0 10px; border-radius: 20px;
@@ -423,6 +439,19 @@
   <main id="g-log"></main>
 </div>
 
+<div class="view" id="view-weekly">
+  <header>
+    <div class="header-top">
+      <div class="date-nav">
+        <button id="w-prev" aria-label="前の週">‹</button>
+        <div class="date-label" id="w-label"></div>
+        <button id="w-next" aria-label="次の週">›</button>
+      </div>
+    </div>
+  </header>
+  <main id="w-log"></main>
+</div>
+
 <div class="view" id="view-body">
   <header id="b-head"></header>
   <main id="b-log"></main>
@@ -470,6 +499,7 @@
   <button class="tab" data-view="rocket">Rocket</button>
   <button class="tab" data-view="gym">GYM</button>
   <button class="tab" data-view="body">Body</button>
+  <button class="tab" data-view="weekly">Weekly</button>
 </nav>
 </div>
 
@@ -830,6 +860,88 @@ document.getElementById('b-head').addEventListener('click', e => {
   planView = 'new';
   renderBody();
 });
+
+const WD = ['月','火','水','木','金','土','日'];
+
+function renderWeekly() {
+  const from = weekStart(viewDate);
+  const days = Array.from({ length: 7 }, (_, i) => shiftDate(from, i));
+  const [fm, fd] = from.split('-').slice(1).map(Number);
+  const [tm, td] = days[6].split('-').slice(1).map(Number);
+  document.getElementById('w-label').textContent = `${fm}/${fd} - ${tm}/${td}`;
+
+  const perDay = days.map(d => entriesFor(d).reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p, f: a.f + e.f, c: a.c + e.c }), { k: 0, p: 0, f: 0, c: 0 }));
+  const sum = perDay.reduce((a, b) => ({ k: a.k + b.k, p: a.p + b.p, f: a.f + b.f, c: a.c + b.c }), { k: 0, p: 0, f: 0, c: 0 });
+  const logged = perDay.filter(d => d.k > 0).length;
+  const kcalAvg = logged ? Math.round(sum.k / logged) : 0;
+
+  const pc = sum.p * 4, fc = sum.f * 9, cc = sum.c * 4, tot = pc + fc + cc;
+  const R = 46, C = 2 * Math.PI * R;
+  let offset = 0;
+  const arc = (val, color) => {
+    const len = tot ? (val / tot) * C : 0;
+    const el = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="20" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;
+    offset += len;
+    return el;
+  };
+  const donut = tot
+    ? `<svg width="120" height="120" viewBox="0 0 120 120">${arc(pc, '#378ADD')}${arc(fc, '#EF9F27')}${arc(cc, '#1D9E75')}</svg>`
+    : `<svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="var(--track)" stroke-width="20"/></svg>`;
+  const pct = v => tot ? Math.round(v / tot * 100) : 0;
+
+  const actMin = days.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
+  const actDays = days.filter(d => actsFor(d).length).length;
+  const gymDays = days.filter(d => gymFor(d).length).length;
+  const vol = days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + g.volume, 0), 0);
+  const dist = Math.round(days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + (g.distance || 0), 0), 0) * 10) / 10;
+
+  const maxK = Math.max(store.kpi.k, ...perDay.map(d => d.k)) || 1;
+  const bars = perDay.map((d, i) => `<div class="wk-bar">
+      <i style="height:${Math.round(d.k / maxK * 86)}px; background:${d.k > store.kpi.k ? 'var(--over)' : 'var(--text)'}"></i>
+      <em>${WD[i]}</em></div>`).join('');
+
+  document.getElementById('w-log').innerHTML = `
+    <div class="wk-card">
+      <div class="wk-title">PFC の内訳（カロリー比）</div>
+      <div class="wk-row">${donut}
+        <div class="wk-legend">
+          <div><span class="wk-dot" style="background:#378ADD"></span>タンパク質<b>${pct(pc)}%</b></div>
+          <div><span class="wk-dot" style="background:#EF9F27"></span>脂質<b>${pct(fc)}%</b></div>
+          <div><span class="wk-dot" style="background:#1D9E75"></span>炭水化物<b>${pct(cc)}%</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="wk-card">
+      <div class="wk-title">1日のカロリー（目標 ${store.kpi.k}）</div>
+      <div class="wk-bars">${bars}</div>
+    </div>
+    <div class="wk-card">
+      <div class="wk-stats">
+        <div class="wk-stat"><span>平均kcal</span><b>${kcalAvg}</b></div>
+        <div class="wk-stat"><span>記録した日</span><b>${logged}</b></div>
+        <div class="wk-stat"><span>平均P</span><b>${logged ? Math.round(sum.p / logged) : 0}g</b></div>
+      </div>
+    </div>
+    <div class="wk-card">
+      <div class="wk-title">Rocket</div>
+      <div class="wk-stats">
+        <div class="wk-stat"><span>活動時間</span><b>${actMin}分</b></div>
+        <div class="wk-stat"><span>活動した日</span><b>${actDays}</b></div>
+        <div class="wk-stat"><span>1日平均</span><b>${Math.round(actMin / 7)}分</b></div>
+      </div>
+    </div>
+    <div class="wk-card">
+      <div class="wk-title">GYM</div>
+      <div class="wk-stats">
+        <div class="wk-stat"><span>行った日</span><b>${gymDays} / 4</b></div>
+        <div class="wk-stat"><span>総量</span><b>${vol.toLocaleString()}kg</b></div>
+        <div class="wk-stat"><span>総距離</span><b>${dist}km</b></div>
+      </div>
+    </div>`;
+}
+
+document.getElementById('w-prev').addEventListener('click', () => goToDate(shiftDate(viewDate, -7)));
+document.getElementById('w-next').addEventListener('click', () => goToDate(shiftDate(viewDate, 7)));
 
 const EXERCISES = ['フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー(lr)','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル','バイク'];
 
@@ -1272,6 +1384,7 @@ function goToDate(dateStr) {
   renderRocket();
   renderGym();
   renderBody();
+  renderWeekly();
 }
 document.getElementById('prev-day').addEventListener('click', () => goToDate(shiftDate(viewDate, -1)));
 document.getElementById('next-day').addEventListener('click', () => goToDate(shiftDate(viewDate, 1)));
@@ -1492,6 +1605,7 @@ document.getElementById('kpi-save').addEventListener('click', () => {
   renderRocket();
   renderGym();
   renderBody();
+  renderWeekly();
 });
 
 const tabbar = document.getElementById('tabbar');
@@ -1520,6 +1634,7 @@ render();
 renderRocket();
 renderGym();
 renderBody();
+renderWeekly();
 
 // アプリ本体を端末にキャッシュして、起動時に通信の完了を待たないようにする。
 if ('serviceWorker' in navigator) {
