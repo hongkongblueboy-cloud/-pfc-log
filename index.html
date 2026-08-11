@@ -721,12 +721,13 @@ const PLAN = [{"d":"2026-07-27","w":0,"kg":105.0,"bf":35.0,"kcal":2100,"waist":1
 
 function renderBody() {
   const today = todayStr();
-  let nowIdx = PLAN.findIndex(r => r.d >= today);
-  if (nowIdx < 0) nowIdx = PLAN.length - 1;
+  // その週が始まった行を強調する（次の行の日付が来るまでは手前の行）
+  let nowIdx = 0;
+  PLAN.forEach((r, i) => { if (r.d <= today) nowIdx = i; });
   document.getElementById('b-log').innerHTML = `
     <table class="plan">
       <tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr>
-      ${PLAN.map((r, i) => `<tr class="${i === nowIdx ? 'now' : (r.d < today ? 'past' : '')}">
+      ${PLAN.map((r, i) => `<tr class="${i === nowIdx ? 'now' : (i < nowIdx ? 'past' : '')}">
         <td>${r.d.slice(5).replace('-', '/')}</td><td>${r.kg}</td><td>${r.bf}%</td>
         <td>${r.kcal}</td><td>${r.waist}</td><td>${r.thigh}</td><td>${r.size}</td></tr>`).join('')}
     </table>`;
