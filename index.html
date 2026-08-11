@@ -946,9 +946,9 @@ function renderWeekly() {
     <div class="wk-card">
       <div class="wk-title">Rocket</div>
       <div class="wk-stats">
-        <div class="wk-stat"><span>活動時間</span><b>${actMin}分</b></div>
+        <div class="wk-stat"><span>活動時間</span><b>${Math.floor(actMin / 60)}時間${actMin % 60}分</b></div>
         <div class="wk-stat"><span>活動した日</span><b>${actDays}</b></div>
-        <div class="wk-stat"><span>Ave. 分/日</span><b>${Math.round(actMin / 7)}分</b></div>
+        <div class="wk-stat"><span>Ave. 分/日</span><b style="color:${Math.round(actMin / 7) < store.actGoal ? RED : ''}">${Math.round(actMin / 7)}分</b></div>
       </div>
     </div>
     <div class="wk-card">
