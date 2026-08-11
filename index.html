@@ -873,11 +873,11 @@ function renderGym() {
   weekEl.textContent = days;
   const GOOD = [4, 1, 2, 3, 4, 4, 4]; // 日 月 火 水 木 金 土
   const good = GOOD[new Date(vy, vm - 1, vd).getDay()];
-  weekEl.style.color = days >= good ? 'var(--ok)' : (days < need ? 'var(--over)' : '#6A1B9A');
+  weekEl.style.color = days >= good ? '#6A1B9A' : (days < need ? 'var(--over)' : '');
 
   const weekBar = document.getElementById('g-week-bar');
   weekBar.style.width = Math.min(100, (days / 4) * 100) + '%';
-  weekBar.style.background = days >= good ? 'var(--ok)' : '#6A1B9A';
+  weekBar.style.background = days >= good ? '#6A1B9A' : 'var(--bar-k)';
 
   const year = Number(viewDate.slice(0, 4));
   const yearCount = gymYearCount(year);
