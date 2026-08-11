@@ -901,12 +901,12 @@ function renderWeekly() {
   // 総合スコア（食事40・Rocket30・GYM30）
   const clamp = v => Math.max(0, Math.min(1, v));
   const avgP = logged ? sum.p / logged : 0;
-  const kcalScore = 20 * clamp(1 - Math.max(0, kcalAvg - store.kpi.k) / store.kpi.k * 3);
-  const pScore = 20 * clamp(store.kpi.p ? avgP / store.kpi.p : 0);
+  const kcalScore = 50 * clamp(1 - Math.max(0, kcalAvg - store.kpi.k) / store.kpi.k * 3);
+  const pScore = 50 * clamp(store.kpi.p ? avgP / store.kpi.p : 0);
   const sFood = Math.round(kcalScore + pScore);
-  const sRocket = Math.round(30 * clamp(actMin / (store.actGoal * 7)));
-  const sGym = Math.round(30 * clamp(gymDays / 4));
-  const score = sFood + sRocket + sGym;
+  const sRocket = Math.round(100 * clamp(actMin / (store.actGoal * 7)));
+  const sGym = Math.round(100 * clamp(gymDays / 4));
+  const score = Math.round((sFood + sRocket + sGym) / 3);
 
   // 目標を超えたら赤、収まっていれば青（Pだけ逆）
   const BLUE = '#185FA5', RED = 'var(--over)';
@@ -926,9 +926,9 @@ function renderWeekly() {
       <div class="wk-title">総合スコア</div>
       <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
       <div class="wk-score-bd">
-        <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 40</b></div>
-        <div><span class="wk-dot" style="background:#17B45E"></span>Rocket<b>${sRocket} / 30</b></div>
-        <div><span class="wk-dot" style="background:#6A1B9A"></span>GYM<b>${sGym} / 30</b></div>
+        <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
+        <div><span class="wk-dot" style="background:#17B45E"></span>Rocket<b>${sRocket} / 100</b></div>
+        <div><span class="wk-dot" style="background:#6A1B9A"></span>GYM<b>${sGym} / 100</b></div>
       </div>
     </div>
     <div class="wk-card">
