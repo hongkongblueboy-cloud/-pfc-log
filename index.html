@@ -728,7 +728,7 @@ function renderBody() {
     <table class="plan">
       <tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr>
       ${PLAN.map((r, i) => `<tr class="${i === nowIdx ? 'now' : (i < nowIdx ? 'past' : '')}">
-        <td>${r.d.slice(5).replace('-', '/')}</td><td>${r.kg}</td><td>${r.bf}%</td>
+        <td>${r.d.slice(5).replace('-', '/')}</td><td>${r.kg.toFixed(1)}</td><td>${r.bf}%</td>
         <td>${r.kcal}</td><td>${r.waist}</td><td>${r.thigh}</td><td>${r.size}</td></tr>`).join('')}
     </table>`;
 }
