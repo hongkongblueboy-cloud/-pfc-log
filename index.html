@@ -706,13 +706,22 @@ function gymYearCount(year) {
 const EXERCISES = ['フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル'];
 
 // 一昨日から今日までに出てこなかった種目を出す
+const SHORT_SPAN = ['トルソー','体幹','レッグアップ','バイシクル','ボール','インチワーム','クロバタ'];
+
 function renderGymTodo() {
-  const from = shiftDate(viewDate, -2);
-  const done = new Set();
-  for (const g of store.gym) {
-    if (g.date >= from && g.date <= viewDate) done.add(g.name);
-  }
-  const missing = EXERCISES.filter(name => ![...done].some(d => d.includes(name) || name.includes(d)));
+  const doneSince = span => {
+    const from = shiftDate(viewDate, span);
+    const done = [];
+    for (const g of store.gym) {
+      if (g.date >= from && g.date <= viewDate) done.push(g.name);
+    }
+    return done;
+  };
+  const done2 = doneSince(-2), done1 = doneSince(-1);
+  const missing = EXERCISES.filter(name => {
+    const done = SHORT_SPAN.includes(name) ? done1 : done2;
+    return !done.some(d => d.includes(name) || name.includes(d));
+  });
   const row = document.getElementById('gym-todo');
   row.style.display = missing.length ? 'flex' : 'none';
   row.innerHTML = missing.map(n => `<button class="recent-chip">${escapeHtml(n)}</button>`).join('');
