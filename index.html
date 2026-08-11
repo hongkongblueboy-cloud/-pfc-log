@@ -442,11 +442,7 @@
 <div class="view" id="view-weekly">
   <header>
     <div class="header-top">
-      <div class="date-nav">
-        <button id="w-prev" aria-label="前の週">‹</button>
-        <div class="date-label" id="w-label"></div>
-        <button id="w-next" aria-label="次の週">›</button>
-      </div>
+      <div class="date-label" id="w-label"></div>
     </div>
   </header>
   <main id="w-log"></main>
@@ -865,7 +861,7 @@ const WD = ['日','月','火','水','木','金','土'];
 
 function renderWeekly() {
   // 曜日に関係なく、その日から遡って7日間
-  const from = shiftDate(viewDate, -6);
+  const from = shiftDate(todayStr(), -6);
   const days = Array.from({ length: 7 }, (_, i) => shiftDate(from, i));
   const [fm, fd] = from.split('-').slice(1).map(Number);
   const [tm, td] = days[6].split('-').slice(1).map(Number);
@@ -942,8 +938,6 @@ function renderWeekly() {
     </div>`;
 }
 
-document.getElementById('w-prev').addEventListener('click', () => goToDate(shiftDate(viewDate, -1)));
-document.getElementById('w-next').addEventListener('click', () => goToDate(shiftDate(viewDate, 1)));
 
 const EXERCISES = ['フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー(lr)','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル','バイク'];
 
