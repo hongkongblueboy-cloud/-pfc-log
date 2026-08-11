@@ -917,10 +917,11 @@ function renderWeekly() {
       <div class="wk-bars">${bars}</div>
     </div>
     <div class="wk-card">
-      <div class="wk-stats">
+      <div class="wk-stats" style="grid-template-columns: repeat(4, 1fr)">
         <div class="wk-stat"><span>平均kcal</span><b>${kcalAvg}</b></div>
-        <div class="wk-stat"><span>記録した日</span><b>${logged}</b></div>
-        <div class="wk-stat"><span>平均P</span><b>${logged ? Math.round(sum.p / logged) : 0}g</b></div>
+        <div class="wk-stat"><span>平均P</span><b>${logged ? Math.round(sum.p / logged) : 0}</b></div>
+        <div class="wk-stat"><span>平均F</span><b>${logged ? Math.round(sum.f / logged) : 0}</b></div>
+        <div class="wk-stat"><span>平均C</span><b>${logged ? Math.round(sum.c / logged) : 0}</b></div>
       </div>
     </div>
     <div class="wk-card">
