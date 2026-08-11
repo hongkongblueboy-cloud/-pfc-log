@@ -783,11 +783,11 @@ function renderBody() {
       <button class="plan-tab${planView === 'old' ? ' on' : ''}" data-plan="old">従来の目標</button>
       <button class="plan-tab${planView === 'new' ? ' on' : ''}" data-plan="new">修正目標</button>
     </div>
-    ${planView === 'old' ? `<div class="plan-input">
+    ${planView === 'new' ? `<div class="plan-input">
       <span>現在の体重</span>
       <input id="b-kg" type="number" step="0.1" inputmode="decimal" placeholder="98.5">
       <span>kg</span>
-      <button id="b-apply">修正目標に反映</button>
+      <button id="b-apply">反映</button>
     </div>` : ''}
     <table class="plan">
       <thead><tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr></thead>
