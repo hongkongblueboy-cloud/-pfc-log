@@ -1065,7 +1065,7 @@ function renderGym() {
   yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
   yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
 
-  document.getElementById('g-sleep').textContent = sleep ? `睡眠時間  ${Math.floor(sleep / 60)}時間 ${sleep % 60}分` : '睡眠時間';
+  document.getElementById('g-sleep').textContent = sleep ? `睡眠  ${Math.floor(sleep / 60)}時間 ${sleep % 60}分` : '睡眠';
   document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '総量';
   document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '総距離';
 
