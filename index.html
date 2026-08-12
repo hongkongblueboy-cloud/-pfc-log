@@ -1192,7 +1192,7 @@ function render() {
   const total = { k: round5(raw.k), p: raw.p, f: raw.f, c: raw.c };
 
   document.getElementById('date-label').textContent = formatDateLabel(viewDate);
-  document.getElementById('kpi-open').textContent = `KPI  ${kpi.k}k   p${kpi.p}   f${kpi.f}   c${kpi.c}`;
+  document.getElementById('kpi-open').textContent = 'KPI管理';
   document.getElementById('kcal-now').textContent = fmt(total.k);
   document.getElementById('kcal-goal').textContent = `/ ${kpi.k} kcal`;
 
