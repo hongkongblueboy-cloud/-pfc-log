@@ -928,8 +928,8 @@ function renderWeekly() {
 
   // 目標を超えたら赤、収まっていれば青（Pだけ逆）
   const BLUE = '#185FA5', RED = 'var(--over)';
-  const under = (v, goal) => (v > goal ? RED : BLUE);
-  const over = (v, goal) => (v >= goal ? BLUE : RED);
+  const under = (v, goal) => (v > goal ? RED : '');
+  const over = (v, goal) => (v >= goal ? '' : RED);
   const avgPv = logged ? Math.round(sum.p / logged) : 0;
   const avgFv = logged ? Math.round(sum.f / logged) : 0;
   const avgCv = logged ? Math.round(sum.c / logged) : 0;
