@@ -150,8 +150,8 @@
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-split { display: grid; grid-template-columns: 1fr 104px; gap: 8px; }
   .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; }
-  .wk-sleep b { font-size: 38px; font-weight: 700; line-height: 1.1; }
-  .wk-sleep em { font-style: normal; font-size: 12px; color: var(--text-2); }
+  .wk-sleep-t { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+  .wk-sleep-v { font-size: 15px; font-weight: 600; white-space: nowrap; margin-top: 4px; }
   .wk-sleep i { font-style: normal; font-size: 11px; color: var(--text-3); margin-top: 4px; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
   .wk-score b { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
@@ -987,9 +987,8 @@ function renderWeekly() {
         </div>
       </div>
       <div class="wk-card wk-sleep">
-        <div class="wk-title">Sleep</div>
-        <b>${sleepDays ? `${sign}${balH}` : '—'}</b>
-        <em>${sleepDays ? `時間${balM ? ' ' + balM + '分' : ''}` : ''}</em>
+        <div class="wk-sleep-t">Sleep</div>
+        <div class="wk-sleep-v">${sleepDays ? `${sign}${balH}時間${balM ? ' ' + balM + '分' : ''}` : '—'}</div>
         <i>${sleepDays}日分</i>
       </div>
     </div>
