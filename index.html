@@ -950,7 +950,7 @@ function renderWeekly() {
   const score = Math.round((sFood + sRocket + sGym) / 3);
 
   // 目標を超えたら赤、収まっていれば青（Pだけ逆）
-  const BLUE = '#185FA5', RED = 'var(--over)';
+  const BLUE = '#185FA5', RED = '#EE8A89';
   const under = (v, goal) => (v > goal ? RED : '');
   const over = (v, goal) => (v >= goal ? '' : RED);
   const avgPv = logged ? Math.round(sum.p / logged) : 0;
@@ -963,7 +963,7 @@ function renderWeekly() {
 
   const maxK = Math.max(store.kpi.k, ...perDay.map(d => d.k)) || 1;
   const bars = perDay.map((d, i) => `<div class="wk-bar">
-      <i style="height:${Math.round(d.k / maxK * 86)}px; background:${d.k > store.kpi.k ? 'var(--over)' : 'var(--text)'}"></i>
+      <i style="height:${Math.round(d.k / maxK * 86)}px; background:${d.k > store.kpi.k ? '#EE8A89' : 'var(--text)'}"></i>
       <em>${WD[new Date(...days[i].split('-').map((v, j) => j === 1 ? v - 1 : +v)).getDay()]}</em></div>`).join('');
 
   document.getElementById('w-log').innerHTML = `
