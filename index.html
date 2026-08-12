@@ -764,7 +764,7 @@ function weekStart(dateStr) {
 function gymDaysBetween(from, to) {
   const days = new Set();
   for (const g of store.gym) {
-    if (g.date >= from && g.date <= to) days.add(g.date);
+    if (!g.memo && g.date >= from && g.date <= to) days.add(g.date);
   }
   return days.size;
 }
@@ -775,7 +775,7 @@ function gymYearCount(year) {
   const from = (year === base.year) ? base.asOf : `${year}-01-01`;
   const after = new Set();
   for (const g of store.gym) {
-    if (g.date > from && g.date <= `${year}-12-31`) after.add(g.date);
+    if (!g.memo && g.date > from && g.date <= `${year}-12-31`) after.add(g.date);
   }
   return (year === base.year ? base.count : 0) + after.size;
 }
@@ -876,7 +876,7 @@ function scoreDays(list) {
   const food = Math.round(50 * clamp(1 - Math.max(0, avgK - store.kpi.k) / store.kpi.k * 3) + 50 * clamp(store.kpi.p ? avgP / store.kpi.p : 0));
   const min = list.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
   const rocket = Math.round(100 * clamp(min / (store.actGoal * list.length)));
-  const gDays = list.filter(d => gymFor(d).length).length;
+  const gDays = list.filter(d => gymFor(d).some(g => !g.memo)).length;
   const gym = Math.round(100 * clamp(gDays / (4 * list.length / 7)));
   return Math.round((food + rocket + gym) / 3);
 }
@@ -912,7 +912,7 @@ function renderWeekly() {
 
   const actMin = days.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
   const actDays = days.filter(d => actsFor(d).length).length;
-  const gymDays = days.filter(d => gymFor(d).length).length;
+  const gymDays = days.filter(d => gymFor(d).some(g => !g.memo)).length;
   const vol = days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + g.volume, 0), 0);
   const dist = Math.round(days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + (g.distance || 0), 0), 0) * 10) / 10;
 
@@ -990,7 +990,7 @@ function renderGymTodo() {
     const from = shiftDate(viewDate, span);
     const done = [];
     for (const g of store.gym) {
-      if (g.date >= from && g.date <= viewDate) done.push(g.name);
+      if (!g.memo && g.date >= from && g.date <= viewDate) done.push(g.name);
     }
     return done;
   };
@@ -1202,7 +1202,7 @@ function render() {
       <span class="time edit" data-id="${e.id}">${e.time}</span>
       <div class="body">
         <span class="name">${escapeHtml(e.name)}${e.mult && e.mult !== 1 ? `<span class="mult-badge">×${e.mult}</span>` : ''}</span>
-        <span class="pfc mono">${fmt(e.k)}k${e.estimated ? '*' : ''}   p${fmt(e.p)}   f${fmt(e.f)}   c${fmt(e.c)}</span>
+        ${e.memo ? '' : `<span class="pfc mono">${fmt(e.k)}k${e.estimated ? '*' : ''}   p${fmt(e.p)}   f${fmt(e.f)}   c${fmt(e.c)}</span>`}
       </div>
       <button class="del" data-id="${e.id}" aria-label="削除">×</button>
     </div>`).join('');
@@ -1215,6 +1215,7 @@ function recentFoods() {
   out.forEach(f => seen.add(f.name));
   for (let i = store.entries.length - 1; i >= 0 && out.length < 30; i--) {
     const e = store.entries[i];
+    if (e.memo) continue;
     if (seen.has(e.name)) continue;
     seen.add(e.name);
     const hidden = store.hiddenFoods.find(h => h.name === e.name);
@@ -1352,7 +1353,17 @@ function submit() {
   if (!text.trim()) return;
   const parsed = parseEntry(text);
   if (!parsed) {
-    showHint('読み取れませんでした。「名前 270k p4 f2 c61」の形式で入力', true);
+    const now0 = new Date();
+    const memo = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
+      time: `${String(now0.getHours()).padStart(2, '0')}:${String(now0.getMinutes()).padStart(2, '0')}`,
+      name: text.trim(), memo: true, k: 0, p: 0, f: 0, c: 0 };
+    store.entries.push(memo);
+    const bk = byDate.get(memo.date);
+    if (bk) bk.push(memo); else byDate.set(memo.date, [memo]);
+    saveStore();
+    input.value = ''; fitInput(input);
+    showHint('メモとして記録しました（集計には入りません）', false);
+    render();
     return;
   }
   const appliedMult = mult;
@@ -1485,8 +1496,18 @@ function submitGym() {
   if (!text.trim()) return;
   const parsed = parseGym(text);
   if (!parsed) {
-    gymHint.textContent = '読み取れませんでした。「フライ 20×10→16×10」の形式で入力';
-    gymHint.classList.add('error');
+    const n0 = new Date();
+    const memo = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
+      time: `${String(n0.getHours()).padStart(2, '0')}:${String(n0.getMinutes()).padStart(2, '0')}`,
+      name: text.trim(), sets: '', memo: true, count: 0, volume: 0, distance: 0 };
+    store.gym.push(memo);
+    const bk = gymByDate.get(memo.date);
+    if (bk) bk.push(memo); else gymByDate.set(memo.date, [memo]);
+    saveStore();
+    gymInput.value = ''; fitInput(gymInput);
+    gymHint.textContent = 'メモとして記録しました（集計には入りません）';
+    gymHint.classList.remove('error');
+    renderGym();
     return;
   }
   const now = new Date();
