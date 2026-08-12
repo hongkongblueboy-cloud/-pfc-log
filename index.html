@@ -145,7 +145,7 @@
   .wk-legend div { display: flex; align-items: center; gap: 8px; }
   .wk-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .wk-legend b { margin-left: auto; font-weight: 600; }
-  .w-monthly { margin-left: auto; font-size: 12px; color: var(--text-3); }
+  .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
   .wk-score b { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
   .wk-score span { font-size: 13px; color: var(--text-2); }
@@ -941,7 +941,7 @@ function renderWeekly() {
 
   document.getElementById('w-log').innerHTML = `
     <div class="wk-card">
-      <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly">Monthly ${monthly}</span></div>
+      <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly">月間スコア ${monthly} / 100</span></div>
       <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
       <div class="wk-score-bd">
         <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
