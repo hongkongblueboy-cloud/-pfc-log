@@ -163,7 +163,7 @@
   .wk-bar i { display: block; border-radius: 3px 3px 0 0; background: var(--text); }
   .wk-bar em { font-style: normal; font-size: 10px; color: var(--text-3); text-align: center; }
   .plan-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
-  .plan-input { display: grid; grid-template-columns: 1fr 76px auto auto; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
+  .plan-input { display: grid; grid-template-columns: 1fr auto 76px auto auto; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
   .plan-input input { width: 76px; border: 0.5px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; padding: 7px 10px; border-radius: 8px; outline: none; }
   .plan-input button { border: none; border-radius: 8px; background: var(--send); color: var(--send-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; cursor: pointer; }
   .plan-tab {
@@ -846,7 +846,8 @@ function renderBody() {
       <button class="plan-tab${planView === 'new' ? ' on' : ''}" data-plan="new">修正目標</button>
     </div>
     ${planView === 'new' ? `<div class="plan-input">
-      <span>${(() => { const [, m, d] = todayStr().split('-').map(Number); return `本日 ${m}月${d}日`; })()} 現在の体重</span>
+      <span>${(() => { const [, m, d] = todayStr().split('-').map(Number); return `本日 ${m}月${d}日`; })()}</span>
+      <span>現在の体重</span>
       <input id="b-kg" type="number" step="0.1" inputmode="decimal">
       <span>kg</span>
       <button id="b-apply">反映</button>
