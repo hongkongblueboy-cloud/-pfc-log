@@ -956,9 +956,9 @@ function renderWeekly() {
     <div class="wk-card">
       <div class="wk-stats" style="grid-template-columns: repeat(4, 1fr)">
         <div class="wk-stat"><span>Ave. kcal</span><b style="color:${under(kcalAvg, store.kpi.k)}">${kcalAvg}</b></div>
-        <div class="wk-stat"><span>Ave. P</span><b style="color:${over(avgPv, store.kpi.p)}">${avgPv}</b></div>
+        <div class="wk-stat"><span>Ave. P</span><b style="color:${over(avgPv, 135)}">${avgPv}</b></div>
         <div class="wk-stat"><span>Ave. F</span><b style="color:${under(avgFv, store.kpi.f)}">${avgFv}</b></div>
-        <div class="wk-stat"><span>Ave. C</span><b style="color:${under(avgCv, store.kpi.c)}">${avgCv}</b></div>
+        <div class="wk-stat"><span>Ave. C</span><b style="color:${under(avgCv, 250)}">${avgCv}</b></div>
       </div>
     </div>
     <div class="wk-card">
