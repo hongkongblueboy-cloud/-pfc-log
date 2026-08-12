@@ -134,7 +134,6 @@
   .tl-step.next .tl-what { color: var(--text); }
   #g-week { font-size: 16px; font-weight: 600; letter-spacing: 0; }
   #view-gym .kcal-goal, #view-gym .kcal-left { font-size: 16px; }
-  .gym-row0 { display: flex; margin-bottom: 4px; }
   #g-sleep { color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; font-size: 16px; font-weight: 400; }
   .gym-row2 { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
@@ -439,8 +438,8 @@
         <div class="date-label" id="g-date-label"></div>
         <button id="g-next-day" aria-label="次の日">›</button>
       </div>
+      <span class="kcal-left" id="g-sleep"></span>
     </div>
-    <div class="gym-row0"><span class="kcal-left" id="g-sleep"></span></div>
     <div class="kcal-row">
       <span class="kcal-now" id="g-week">0</span>
       <span class="kcal-goal">/ 週4</span>
