@@ -134,6 +134,8 @@
   .tl-step.next .tl-what { color: var(--text); }
   #g-week { font-size: 16px; font-weight: 600; letter-spacing: 0; }
   #view-gym .kcal-goal, #view-gym .kcal-left { font-size: 16px; }
+  .gym-row0 { display: flex; margin-bottom: 4px; }
+  #g-sleep { color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; font-size: 16px; }
   .gym-row2 { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
   .gym-year { font-size: 16px; color: var(--text-2); }
@@ -309,6 +311,7 @@
   .recent-row::-webkit-scrollbar { display: none; }
   #gym-todo { flex-wrap: wrap; overflow-x: visible; row-gap: 6px; }
   #gym-todo .recent-chip { background: var(--text-2); color: #fff; border-color: var(--text-2); }
+  #gym-todo .recent-chip.sleep { background: var(--text); border-color: var(--text); }
   .recent-chip.pinned { background: var(--text-2); color: #fff; border-color: var(--text-2); }
   .recent-chip {
     flex-shrink: 0; padding: 6px 12px; border-radius: 16px;
@@ -431,6 +434,7 @@
         <button id="g-next-day" aria-label="次の日">›</button>
       </div>
     </div>
+    <div class="gym-row0"><span class="kcal-left" id="g-sleep"></span></div>
     <div class="kcal-row">
       <span class="kcal-now" id="g-week">0</span>
       <span class="kcal-goal">/ 週4</span>
@@ -746,6 +750,15 @@ function parseGym(text) {
     if (m) volume += parseFloat(m[1]) * parseFloat(m[2]);
     else allWeighted = false;
   }
+  if (name === '睡眠') {
+    const t = setsText.split(/[-–—~〜\s]+/).map(x => toMinutes(x)).filter(v => v !== null);
+    if (t.length === 2) {
+      let mins = t[1] - t[0];
+      if (mins < 0) mins += 1440;
+      return { name, sets: setsText, count: 0, volume: 0, distance: 0, sleep: mins };
+    }
+  }
+
   let distance = 0;
   const km = /(\d+(?:\.\d+)?)\s*(?:km|KM|Km|kM|㎞|キロ)/g;
   let d;
@@ -765,7 +778,7 @@ function weekStart(dateStr) {
 function gymDaysBetween(from, to) {
   const days = new Set();
   for (const g of store.gym) {
-    if (!g.memo && g.date >= from && g.date <= to) days.add(g.date);
+    if (!g.memo && !g.sleep && g.date >= from && g.date <= to) days.add(g.date);
   }
   return days.size;
 }
@@ -776,7 +789,7 @@ function gymYearCount(year) {
   const from = (year === base.year) ? base.asOf : `${year}-01-01`;
   const after = new Set();
   for (const g of store.gym) {
-    if (!g.memo && g.date > from && g.date <= `${year}-12-31`) after.add(g.date);
+    if (!g.memo && !g.sleep && g.date > from && g.date <= `${year}-12-31`) after.add(g.date);
   }
   return (year === base.year ? base.count : 0) + after.size;
 }
@@ -877,7 +890,7 @@ function scoreDays(list) {
   const food = Math.round(50 * clamp(1 - Math.max(0, avgK - store.kpi.k) / store.kpi.k * 3) + 50 * clamp(store.kpi.p ? avgP / store.kpi.p : 0));
   const min = list.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
   const rocket = Math.round(100 * clamp(min / (store.actGoal * list.length)));
-  const gDays = list.filter(d => gymFor(d).some(g => !g.memo)).length;
+  const gDays = list.filter(d => gymFor(d).some(g => !g.memo && !g.sleep)).length;
   const gym = Math.round(100 * clamp(gDays / (4 * list.length / 7)));
   return Math.round((food + rocket + gym) / 3);
 }
@@ -915,7 +928,7 @@ function renderWeekly() {
 
   const actMin = days.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
   const actDays = days.filter(d => actsFor(d).length).length;
-  const gymDays = days.filter(d => gymFor(d).some(g => !g.memo)).length;
+  const gymDays = days.filter(d => gymFor(d).some(g => !g.memo && !g.sleep)).length;
   const vol = days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + g.volume, 0), 0);
   const dist = Math.round(days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + (g.distance || 0), 0), 0) * 10) / 10;
 
@@ -983,7 +996,7 @@ function renderWeekly() {
 }
 
 
-const EXERCISES = ['フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー(lr)','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル','バイク'];
+const EXERCISES = ['睡眠','フリーベンチ','ウェイトスクワット','フライ','内転筋','サイドスクワット','fラウンジ','bラウンジ','フロントスクワット','プル','トルソー(lr)','体幹','レッグアップ','バイシクル','レッグカール','クロバタ','ボール','ロウ','インチワーム','ショル','バイク'];
 
 // 一昨日から今日までに出てこなかった種目を出す
 const SHORT_SPAN = ['トルソー(lr)','体幹','レッグアップ','バイシクル','ボール','インチワーム','クロバタ'];
@@ -999,12 +1012,12 @@ function renderGymTodo() {
   };
   const done2 = doneSince(-2), done1 = doneSince(-1);
   const missing = EXERCISES.filter(name => {
-    const done = SHORT_SPAN.includes(name) ? done1 : done2;
+    const done = name === '睡眠' ? doneSince(0) : (SHORT_SPAN.includes(name) ? done1 : done2);
     return !done.some(d => d.includes(name) || name.includes(d));
   });
   const row = document.getElementById('gym-todo');
   row.style.display = missing.length ? 'flex' : 'none';
-  row.innerHTML = missing.map(n => `<button class="recent-chip">${escapeHtml(n)}</button>`).join('');
+  row.innerHTML = missing.map(n => `<button class="recent-chip${n === '睡眠' ? ' sleep' : ''}">${escapeHtml(n)}</button>`).join('');
 }
 
 document.getElementById('gym-todo').addEventListener('click', e => {
@@ -1019,6 +1032,7 @@ document.getElementById('gym-todo').addEventListener('click', e => {
 function renderGym() {
   const list = gymFor(viewDate);
   const volume = list.reduce((sum, g) => sum + g.volume, 0);
+  const sleep = list.reduce((sum, g) => sum + (g.sleep || 0), 0);
   const distance = Math.round(list.reduce((sum, g) => sum + (g.distance || 0), 0) * 10) / 10;
 
   document.getElementById('g-date-label').textContent = formatDateLabel(viewDate);
@@ -1049,6 +1063,7 @@ function renderGym() {
   yearBar.style.width = Math.min(100, yearGoal > 0 ? (yearCount / yearGoal) * 100 : 0) + '%';
   yearBar.style.background = yearCount >= yearGoal ? 'var(--ok)' : 'var(--bar-k)';
 
+  document.getElementById('g-sleep').textContent = sleep ? `睡眠時間  ${Math.floor(sleep / 60)}時間 ${sleep % 60}分` : '睡眠時間';
   document.getElementById('g-volume').textContent = volume ? `総量  ${volume.toLocaleString()}kg` : '総量';
   document.getElementById('g-distance').textContent = distance ? `総距離  ${distance}km` : '総距離';
 
