@@ -145,6 +145,7 @@
   .wk-legend div { display: flex; align-items: center; gap: 8px; }
   .wk-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .wk-legend b { margin-left: auto; font-weight: 600; }
+  .w-monthly { margin-left: auto; font-size: 12px; color: var(--text-3); }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
   .wk-score b { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
   .wk-score span { font-size: 13px; color: var(--text-2); }
@@ -449,6 +450,7 @@
   <header>
     <div class="header-top">
       <div class="date-label" id="w-label"></div>
+      <span class="w-monthly" id="w-monthly"></span>
     </div>
   </header>
   <main id="w-log"></main>
@@ -865,6 +867,21 @@ document.getElementById('b-head').addEventListener('click', e => {
 
 const WD = ['日','月','火','水','木','金','土'];
 
+// 指定した日数分をまとめて採点する（食事・Rocket・GYMを各100点、平均が総合）
+function scoreDays(list) {
+  const clamp = v => Math.max(0, Math.min(1, v));
+  const per = list.map(d => entriesFor(d).reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p }), { k: 0, p: 0 }));
+  const logged = per.filter(d => d.k > 0).length;
+  const avgK = logged ? per.reduce((a, d) => a + d.k, 0) / logged : 0;
+  const avgP = logged ? per.reduce((a, d) => a + d.p, 0) / logged : 0;
+  const food = Math.round(50 * clamp(1 - Math.max(0, avgK - store.kpi.k) / store.kpi.k * 3) + 50 * clamp(store.kpi.p ? avgP / store.kpi.p : 0));
+  const min = list.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
+  const rocket = Math.round(100 * clamp(min / (store.actGoal * list.length)));
+  const gDays = list.filter(d => gymFor(d).length).length;
+  const gym = Math.round(100 * clamp(gDays / (4 * list.length / 7)));
+  return Math.round((food + rocket + gym) / 3);
+}
+
 function renderWeekly() {
   // 曜日に関係なく、その日から遡って7日間
   const from = shiftDate(todayStr(), -6);
@@ -872,6 +889,8 @@ function renderWeekly() {
   const [fm, fd] = from.split('-').slice(1).map(Number);
   const [tm, td] = days[6].split('-').slice(1).map(Number);
   document.getElementById('w-label').textContent = `${fm}/${fd} - ${tm}/${td}`;
+  const month = Array.from({ length: 30 }, (_, i) => shiftDate(todayStr(), i - 29));
+  document.getElementById('w-monthly').textContent = `Monthly ${scoreDays(month)}`;
 
   const perDay = days.map(d => entriesFor(d).reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p, f: a.f + e.f, c: a.c + e.c }), { k: 0, p: 0, f: 0, c: 0 }));
   const sum = perDay.reduce((a, b) => ({ k: a.k + b.k, p: a.p + b.p, f: a.f + b.f, c: a.c + b.c }), { k: 0, p: 0, f: 0, c: 0 });
