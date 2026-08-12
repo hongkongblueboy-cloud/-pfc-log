@@ -148,6 +148,12 @@
   .wk-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .wk-legend b { margin-left: auto; font-weight: 600; }
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
+  .wk-score-wrap { display: grid; grid-template-columns: 1fr 92px; gap: 14px; }
+  .wk-sleep { border-left: 0.5px solid var(--border); padding-left: 12px; display: flex; flex-direction: column; justify-content: center; }
+  .wk-sleep span { font-size: 11px; letter-spacing: 0.08em; color: var(--text-3); }
+  .wk-sleep b { font-size: 30px; font-weight: 700; line-height: 1.1; }
+  .wk-sleep em { font-style: normal; font-size: 12px; color: var(--text-2); }
+  .wk-sleep i { font-style: normal; font-size: 11px; color: var(--text-3); margin-top: 4px; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
   .wk-score b { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
   .wk-score span { font-size: 13px; color: var(--text-2); }
@@ -951,6 +957,10 @@ function renderWeekly() {
   const avgFv = logged ? Math.round(sum.f / logged) : 0;
   const avgCv = logged ? Math.round(sum.c / logged) : 0;
 
+  const sleepList = days.map(d => gymFor(d).reduce((a, g) => a + (g.sleep || 0), 0)).filter(v => v > 0);
+  const sleepDays = sleepList.length;
+  const sleepAvg = sleepDays ? Math.round(sleepList.reduce((a, b) => a + b, 0) / sleepDays) : 0;
+
   const maxK = Math.max(store.kpi.k, ...perDay.map(d => d.k)) || 1;
   const bars = perDay.map((d, i) => `<div class="wk-bar">
       <i style="height:${Math.round(d.k / maxK * 86)}px; background:${d.k > store.kpi.k ? 'var(--over)' : 'var(--text)'}"></i>
@@ -959,11 +969,21 @@ function renderWeekly() {
   document.getElementById('w-log').innerHTML = `
     <div class="wk-card">
       <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly">月間スコア ${monthly} / 100</span></div>
-      <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
-      <div class="wk-score-bd">
-        <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
-        <div><span class="wk-dot" style="background:#17B45E"></span>Rocket<b>${sRocket} / 100</b></div>
-        <div><span class="wk-dot" style="background:#6A1B9A"></span>GYM<b>${sGym} / 100</b></div>
+      <div class="wk-score-wrap">
+        <div>
+          <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
+          <div class="wk-score-bd">
+            <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
+            <div><span class="wk-dot" style="background:#17B45E"></span>Rocket<b>${sRocket} / 100</b></div>
+            <div><span class="wk-dot" style="background:#6A1B9A"></span>GYM<b>${sGym} / 100</b></div>
+          </div>
+        </div>
+        <div class="wk-sleep">
+          <span>Sleep</span>
+          <b>${sleepDays ? Math.floor(sleepAvg / 60) : '—'}</b>
+          <em>${sleepDays ? `時間 ${sleepAvg % 60}分` : ''}</em>
+          <i>${sleepDays}日分</i>
+        </div>
       </div>
     </div>
     <div class="wk-card">
