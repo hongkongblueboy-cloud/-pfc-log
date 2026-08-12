@@ -569,6 +569,7 @@ function normalizeStore(s) {
   if (!Array.isArray(s.gym)) s.gym = [];
   if (!Array.isArray(s.pinnedFoods)) s.pinnedFoods = [];
   if (!Array.isArray(s.planNew)) s.planNew = [];
+  if (!s.measured) s.measured = null;
   if (!Array.isArray(s.hiddenFoods)) s.hiddenFoods = [];
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
@@ -842,8 +843,8 @@ function renderBody() {
     </div>
     <div class="plan-input">
       <button id="b-fitdays" class="fitdays">Fitdays</button>
-      <span class="b-measured" id="b-measured">測定体重</span>
-      <span class="b-measured" id="b-measured-v">—</span>
+      <span class="b-measured" id="b-measured">測定体重${store.measured ? ` (${store.measured.date.slice(5).replace('-', '/')})` : ''}</span>
+      <span class="b-measured" id="b-measured-v">${store.measured ? store.measured.kg : '—'}</span>
       <span>kg</span>
       <span></span>
     </div>` : ''}
@@ -1697,6 +1698,17 @@ tabbar.addEventListener('click', e => {
 });
 
 setView('pfc');
+// ショートカットなどから ?kg=102.1 の形で測定値を受け取る
+(() => {
+  const q = new URLSearchParams(location.search);
+  const kg = Number(q.get('kg'));
+  if (kg > 30 && kg < 300) {
+    store.measured = { date: todayStr(), kg: Math.round(kg * 10) / 10, bf: Number(q.get('bf')) || null };
+    saveStore();
+  }
+  if (q.has('kg')) history.replaceState(null, '', location.pathname);
+})();
+
 indexEntries();
 indexActs();
 indexGym();
