@@ -146,7 +146,7 @@
   .wk-legend div { display: flex; align-items: center; gap: 8px; }
   .wk-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .wk-legend b { margin-left: auto; font-weight: 600; }
-  #view-weekly .date-label { font-size: 18px; }
+  #view-weekly .date-label { font-size: 16px; text-align: left; white-space: pre; }
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-split { display: grid; grid-template-columns: 1fr 104px; gap: 8px; }
   .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; }
@@ -909,7 +909,7 @@ function renderWeekly() {
     const [y, m, dd] = d.split('-').map(Number);
     return `${m}/${dd}(${WEEKDAYS[new Date(y, m - 1, dd).getDay()]})`;
   };
-  document.getElementById('w-label').textContent = `${label(from)} − ${label(days[6])}`;
+  document.getElementById('w-label').textContent = `　${label(from)} − ${label(days[6])}`;
   // 今月1日から本日まで（未到来の日は含めない）
   const dayOfMonth = Number(todayStr().slice(8));
   const month = Array.from({ length: dayOfMonth }, (_, i) => `${todayStr().slice(0, 8)}${String(i + 1).padStart(2, '0')}`);
