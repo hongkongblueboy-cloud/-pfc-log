@@ -163,9 +163,6 @@
   .plan-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
   .plan-input { display: grid; grid-template-columns: 1fr 76px auto auto; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 12px; }
   .plan-input input { width: 76px; border: 0.5px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; padding: 7px 10px; border-radius: 8px; outline: none; }
-  .plan-input .fitdays { justify-self: start; background: var(--card); color: var(--text); border: 1px solid var(--text); }
-  .b-measured { font-size: 13px; color: var(--text-2); }
-  #b-measured-v { text-align: left; }
   .plan-input button { border: none; border-radius: 8px; background: var(--send); color: var(--send-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; cursor: pointer; }
   .plan-tab {
     flex: 1; padding: 8px 0; border-radius: 8px; cursor: pointer;
@@ -840,13 +837,6 @@ function renderBody() {
       <input id="b-kg" type="number" step="0.1" inputmode="decimal">
       <span>kg</span>
       <button id="b-apply">反映</button>
-    </div>
-    <div class="plan-input">
-      <button id="b-fitdays" class="fitdays">Fitdays</button>
-      <span class="b-measured" id="b-measured">測定体重${store.measured ? ` (${store.measured.date.slice(5).replace('-', '/')})` : ''}</span>
-      <span class="b-measured" id="b-measured-v">${store.measured ? store.measured.kg : '—'}</span>
-      <span>kg</span>
-      <span></span>
     </div>` : ''}
     <table class="plan"><tr><th>日付</th><th>体重</th><th>体脂肪</th><th>kcal</th><th>ウエスト</th><th>太もも</th><th>服</th></tr></table>`;
 
