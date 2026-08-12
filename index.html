@@ -1012,7 +1012,8 @@ function renderGymTodo() {
   };
   const done2 = doneSince(-2), done1 = doneSince(-1);
   const missing = EXERCISES.filter(name => {
-    const done = name === '睡眠' ? doneSince(0) : (SHORT_SPAN.includes(name) ? done1 : done2);
+    if (name === '睡眠') return true; // 睡眠は常に置いておく
+    const done = SHORT_SPAN.includes(name) ? done1 : done2;
     return !done.some(d => d.includes(name) || name.includes(d));
   });
   const row = document.getElementById('gym-todo');
