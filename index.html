@@ -888,7 +888,9 @@ function renderWeekly() {
   const [fm, fd] = from.split('-').slice(1).map(Number);
   const [tm, td] = days[6].split('-').slice(1).map(Number);
   document.getElementById('w-label').textContent = `${fm}/${fd} - ${tm}/${td}`;
-  const month = Array.from({ length: 30 }, (_, i) => shiftDate(todayStr(), i - 29));
+  // 今月1日から本日まで（未到来の日は含めない）
+  const dayOfMonth = Number(todayStr().slice(8));
+  const month = Array.from({ length: dayOfMonth }, (_, i) => `${todayStr().slice(0, 8)}${String(i + 1).padStart(2, '0')}`);
   const monthly = scoreDays(month);
 
   const perDay = days.map(d => entriesFor(d).reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p, f: a.f + e.f, c: a.c + e.c }), { k: 0, p: 0, f: 0, c: 0 }));
