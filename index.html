@@ -889,7 +889,7 @@ function renderWeekly() {
   const [tm, td] = days[6].split('-').slice(1).map(Number);
   document.getElementById('w-label').textContent = `${fm}/${fd} - ${tm}/${td}`;
   const month = Array.from({ length: 30 }, (_, i) => shiftDate(todayStr(), i - 29));
-  document.getElementById('w-monthly').textContent = `Monthly ${scoreDays(month)}`;
+  const monthly = scoreDays(month);
 
   const perDay = days.map(d => entriesFor(d).reduce((a, e) => ({ k: a.k + e.k, p: a.p + e.p, f: a.f + e.f, c: a.c + e.c }), { k: 0, p: 0, f: 0, c: 0 }));
   const sum = perDay.reduce((a, b) => ({ k: a.k + b.k, p: a.p + b.p, f: a.f + b.f, c: a.c + b.c }), { k: 0, p: 0, f: 0, c: 0 });
@@ -941,7 +941,7 @@ function renderWeekly() {
 
   document.getElementById('w-log').innerHTML = `
     <div class="wk-card">
-      <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly" id="w-monthly"></span></div>
+      <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly">Monthly ${monthly}</span></div>
       <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
       <div class="wk-score-bd">
         <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
