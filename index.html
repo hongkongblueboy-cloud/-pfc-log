@@ -450,7 +450,6 @@
   <header>
     <div class="header-top">
       <div class="date-label" id="w-label"></div>
-      <span class="w-monthly" id="w-monthly"></span>
     </div>
   </header>
   <main id="w-log"></main>
@@ -942,7 +941,7 @@ function renderWeekly() {
 
   document.getElementById('w-log').innerHTML = `
     <div class="wk-card">
-      <div class="wk-title">総合スコア</div>
+      <div class="wk-title" style="display:flex; align-items:baseline"><span>総合スコア</span><span class="w-monthly" id="w-monthly"></span></div>
       <div class="wk-score"><b>${score}</b><span>点 / 100</span></div>
       <div class="wk-score-bd">
         <div><span class="wk-dot" style="background:#378ADD"></span>食事<b>${sFood} / 100</b></div>
