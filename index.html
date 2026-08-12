@@ -152,7 +152,6 @@
   .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; }
   .wk-sleep-t { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
   .wk-sleep-v { font-size: 15px; font-weight: 600; white-space: nowrap; margin-top: 4px; }
-  .wk-sleep i { font-style: normal; font-size: 11px; color: var(--text-3); margin-top: 4px; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
   .wk-score b { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
   .wk-score span { font-size: 13px; color: var(--text-2); }
@@ -989,7 +988,6 @@ function renderWeekly() {
       <div class="wk-card wk-sleep">
         <div class="wk-sleep-t">Sleep</div>
         <div class="wk-sleep-v">${sleepDays ? `${sign}${balH}時間${balM ? ' ' + balM + '分' : ''}` : '—'}</div>
-        <i>${sleepDays}日分</i>
       </div>
     </div>
     <div class="wk-card">
