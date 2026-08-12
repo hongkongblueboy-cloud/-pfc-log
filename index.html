@@ -905,9 +905,11 @@ function renderWeekly() {
   // 曜日に関係なく、その日から遡って7日間
   const from = shiftDate(todayStr(), -6);
   const days = Array.from({ length: 7 }, (_, i) => shiftDate(from, i));
-  const [fm, fd] = from.split('-').slice(1).map(Number);
-  const [tm, td] = days[6].split('-').slice(1).map(Number);
-  document.getElementById('w-label').textContent = `${fm}/${fd} - ${tm}/${td}`;
+  const label = d => {
+    const [y, m, dd] = d.split('-').map(Number);
+    return `${m}/${dd}(${WEEKDAYS[new Date(y, m - 1, dd).getDay()]})`;
+  };
+  document.getElementById('w-label').textContent = `${label(from)} − ${label(days[6])}`;
   // 今月1日から本日まで（未到来の日は含めない）
   const dayOfMonth = Number(todayStr().slice(8));
   const month = Array.from({ length: dayOfMonth }, (_, i) => `${todayStr().slice(0, 8)}${String(i + 1).padStart(2, '0')}`);
