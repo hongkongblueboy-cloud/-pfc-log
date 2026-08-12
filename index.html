@@ -150,7 +150,7 @@
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-split { display: grid; grid-template-columns: 1fr 104px; gap: 8px; }
   .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; }
-  .wk-sleep b { font-size: 30px; font-weight: 700; line-height: 1.1; }
+  .wk-sleep b { font-size: 38px; font-weight: 700; line-height: 1.1; }
   .wk-sleep em { font-style: normal; font-size: 12px; color: var(--text-2); }
   .wk-sleep i { font-style: normal; font-size: 11px; color: var(--text-3); margin-top: 4px; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
@@ -956,9 +956,17 @@ function renderWeekly() {
   const avgFv = logged ? Math.round(sum.f / logged) : 0;
   const avgCv = logged ? Math.round(sum.c / logged) : 0;
 
-  const sleepList = days.map(d => gymFor(d).reduce((a, g) => a + (g.sleep || 0), 0)).filter(v => v > 0);
-  const sleepDays = sleepList.length;
-  const sleepAvg = sleepDays ? Math.round(sleepList.reduce((a, b) => a + b, 0) / sleepDays) : 0;
+  // 睡眠の損益。1日7時間を標準に、記録した日をすべて積み上げる。
+  const byDay = new Map();
+  for (const g of store.gym) {
+    if (!g.sleep) continue;
+    byDay.set(g.date, (byDay.get(g.date) || 0) + g.sleep);
+  }
+  const sleepDays = byDay.size;
+  const balance = [...byDay.values()].reduce((a, v) => a + (v - 420), 0);
+  const sign = balance < 0 ? '−' : '+';
+  const absMin = Math.abs(balance);
+  const balH = Math.floor(absMin / 60), balM = absMin % 60;
 
   const maxK = Math.max(store.kpi.k, ...perDay.map(d => d.k)) || 1;
   const bars = perDay.map((d, i) => `<div class="wk-bar">
@@ -978,8 +986,8 @@ function renderWeekly() {
       </div>
       <div class="wk-card wk-sleep">
         <div class="wk-title">Sleep</div>
-        <b>${sleepDays ? Math.floor(sleepAvg / 60) : '—'}</b>
-        <em>${sleepDays ? `時間 ${sleepAvg % 60}分` : ''}</em>
+        <b>${sleepDays ? `${sign}${balH}` : '—'}</b>
+        <em>${sleepDays ? `時間${balM ? ' ' + balM + '分' : ''}` : ''}</em>
         <i>${sleepDays}日分</i>
       </div>
     </div>
