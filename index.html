@@ -771,6 +771,9 @@ function parseGym(text) {
   let d;
   while ((d = km.exec(setsText))) distance += parseFloat(d[1]);
 
+  // トルソー(lr)は左右それぞれ行うので重量は2倍で数える
+  if (name === 'トルソー(lr)') volume *= 2;
+
   return { name, sets: setsText, count: parts.length, volume: allWeighted ? Math.round(volume) : 0, distance: Math.round(distance * 10) / 10 };
 }
 
