@@ -942,7 +942,7 @@ function renderWeekly() {
   const actMin = days.reduce((a, d) => a + actsFor(d).reduce((x, g) => x + g.minutes, 0), 0);
   const actDays = days.filter(d => actsFor(d).length).length;
   const gymDays = days.filter(d => gymFor(d).some(g => !g.memo && !g.sleep)).length;
-  const vol = days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + g.volume, 0), 0);
+  const vol = Math.round(days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + g.volume, 0), 0) / 100) * 100;
   const dist = Math.round(days.reduce((a, d) => a + gymFor(d).reduce((x, g) => x + (g.distance || 0), 0), 0) * 10) / 10;
 
   // 総合スコア（食事40・Rocket30・GYM30）
@@ -1063,7 +1063,7 @@ document.getElementById('gym-todo').addEventListener('click', e => {
 
 function renderGym() {
   const list = gymFor(viewDate);
-  const volume = list.reduce((sum, g) => sum + g.volume, 0);
+  const volume = Math.round(list.reduce((sum, g) => sum + g.volume, 0) / 100) * 100;
   const sleep = list.reduce((sum, g) => sum + (g.sleep || 0), 0);
   const distance = Math.round(list.reduce((sum, g) => sum + (g.distance || 0), 0) * 10) / 10;
 
