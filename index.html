@@ -757,7 +757,7 @@ function parseGym(text) {
 
   let volume = 0, allWeighted = true;
   for (const part of parts) {
-    const m = part.match(/^[a-zA-Z]?\s*(\d+(?:\.\d+)?)\s*[×xX*✕]\s*(\d+(?:\.\d+)?)/);
+    const m = part.match(/^[a-zA-Z]?\s*(\d+(?:\.\d+)?)\s*[a-zA-Z]?\s*[×✕*]\s*(\d+(?:\.\d+)?)/) || part.match(/^[a-zA-Z]?\s*(\d+(?:\.\d+)?)\s*[xX]\s*(\d+(?:\.\d+)?)/);
     // 自重種目に「40s×3」と書いた場合は、秒数×セット数で換算する
     if (m && perRep) volume += parseFloat(m[1]) * parseFloat(m[2]) * perRep;
     else if (m) volume += (parseFloat(m[1]) + (name === 'ウェイトスクワット' ? 30 : 0)) * parseFloat(m[2]);
