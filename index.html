@@ -758,7 +758,7 @@ function parseGym(text) {
   let volume = 0, allWeighted = true;
   for (const part of parts) {
     const m = part.match(/^[a-zA-Z]?\s*(\d+(?:\.\d+)?)\s*[×xX*✕]\s*(\d+(?:\.\d+)?)/);
-    if (m) volume += parseFloat(m[1]) * parseFloat(m[2]);
+    if (m) volume += (parseFloat(m[1]) + (name === 'ウェイトスクワット' ? 30 : 0)) * parseFloat(m[2]);
     else if (perRep) {
       const r = part.match(/^(\d+(?:\.\d+)?)/);
       if (r) volume += parseFloat(r[1]) * perRep;
