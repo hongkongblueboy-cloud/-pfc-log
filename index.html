@@ -1055,6 +1055,9 @@ function renderGymTodo() {
   const done2 = doneSince(-2), done1 = doneSince(-1);
   const missing = EXERCISES.filter(name => {
     if (name === '睡眠') return true; // 睡眠は常に置いておく
+    if (name === '尻バイク') { // 当日やっていれば消す
+      return !doneSince(0).some(d => d.includes(name) || name.includes(d));
+    }
     const done = SHORT_SPAN.includes(name) ? done1 : done2;
     return !done.some(d => d.includes(name) || name.includes(d));
   });
