@@ -752,7 +752,7 @@ function parseGym(text) {
 
   const parts = setsText.split(/[,、，\n]|→|->/).map(x => x.trim()).filter(Boolean);
   // 自重種目は1回あたりの重量を決めてある
-  const PER_REP = { 'fラウンジ(lr)': 20, 'bラウンジ(lr)': 30, 'バイシクル': 20 };
+  const PER_REP = { 'fラウンジ(lr)': 20, 'bラウンジ(lr)': 30, 'バイシクル': 20, 'フロントスクワット': 30 };
   const perRep = PER_REP[name];
 
   let volume = 0, allWeighted = true;
