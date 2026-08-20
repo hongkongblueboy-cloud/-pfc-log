@@ -689,15 +689,16 @@ function entriesFor(dateStr) {
 }
 
 // 「1045」「9:30」のどちらの書き方も0時からの分数に直す
+// 24時を超えた「2600」「4700」も、その日の続きとして受け取る
 function toMinutes(token) {
   let m;
   if ((m = token.match(/^(\d{1,2}):(\d{2})$/))) {
     const h = +m[1], mi = +m[2];
-    return h < 24 && mi < 60 ? h * 60 + mi : null;
+    return h < 48 && mi < 60 ? h * 60 + mi : null;
   }
   if ((m = token.match(/^(\d{3,4})$/))) {
     const h = +m[1].slice(0, -2), mi = +m[1].slice(-2);
-    return h < 24 && mi < 60 ? h * 60 + mi : null;
+    return h < 48 && mi < 60 ? h * 60 + mi : null;
   }
   return null;
 }
