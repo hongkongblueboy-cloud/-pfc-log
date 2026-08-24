@@ -431,10 +431,11 @@
     </div>
     <div class="bar kcal-bar"><div id="r-bar" style="width:0%; background:var(--bar-k)"></div></div>
     <div class="criteria-head">
-      <span>ゆずれない3つ</span>
+      <span>ゆずれない5つ</span>
       <span class="streak" id="r-streak"></span>
     </div>
     <div class="criteria" id="criteria"></div>
+    <div class="criteria" id="criteria2" style="margin-top:8px"></div>
     <div class="tl-head">
       <span>ここからの道のり</span>
       <span class="tl-countdown" id="tl-countdown"></span>
@@ -556,7 +557,9 @@
     <div class="kpi-field"><label for="crit-0">転職の条件</label>
       <input id="crit-0" type="text" style="margin-bottom:6px">
       <input id="crit-1" type="text" style="margin-bottom:6px">
-      <input id="crit-2" type="text">
+      <input id="crit-2" type="text" style="margin-bottom:6px">
+      <input id="crit-3" type="text" style="margin-bottom:6px">
+      <input id="crit-4" type="text">
     </div>
   </div>
   <div class="backup-sec">
@@ -606,9 +609,9 @@ function normalizeStore(s) {
   if (!s.gymBase) s.gymBase = { year: 2026, asOf: '2026-08-05', count: 49 };
   if (typeof s.gymYearGoal !== 'number') s.gymYearGoal = 135;
   if (typeof s.actGoal !== 'number' || !(s.actGoal > 0)) s.actGoal = 120;
-  if (!Array.isArray(s.criteria) || s.criteria.length !== 3) {
-    s.criteria = ['年収900万', '周囲の5人', '配置リスク無し'];
-  }
+  if (!Array.isArray(s.criteria)) s.criteria = [];
+  if (s.criteria.length === 3) s.criteria = [...s.criteria, 'ブランディングになる', '一言で表せる強みになる'];
+  if (s.criteria.length !== 5) s.criteria = ['年収900万', '周囲の5人', '配置リスク無し', 'ブランディングになる', '一言で表せる強みになる'];
   if (!Array.isArray(s.milestones) || !s.milestones.length) {
     s.milestones = [
       { on: '2026-10-15', when: '10月中旬', what: '内定' },
@@ -1209,8 +1212,9 @@ function renderRocket() {
   bar.style.width = Math.min(100, goal > 0 ? (total / goal) * 100 : 0) + '%';
   bar.style.background = total >= goal ? 'var(--ok)' : 'var(--bar-k)';
 
-  document.getElementById('criteria').innerHTML =
-    store.criteria.map(c => `<div class="criterion">${escapeHtml(c)}</div>`).join('');
+  const critHtml = c => `<div class="criterion">${escapeHtml(c)}</div>`;
+  document.getElementById('criteria').innerHTML = store.criteria.slice(0, 3).map(critHtml).join('');
+  document.getElementById('criteria2').innerHTML = store.criteria.slice(3, 5).map(critHtml).join('');
 
   const streak = streakDays();
   document.getElementById('r-streak').textContent = streak >= 2 ? `${streak}日連続` : '';
