@@ -742,6 +742,14 @@ function streakDays() {
 // 「フライ 20×10→16×10」のような書き方をそのまま受ける。表記は崩さず保存する。
 function parseGym(text) {
   const raw = text.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  // 「ボール(12) 80, 80」のように名前のあとに括弧で重さを書ける
+  const par = raw.match(/^(\D+?)\s*[(（](\d+(?:\.\d+)?)[)）]\s*(.+)$/);
+  let fixedWeight = null;
+  if (par) {
+    fixedWeight = parseFloat(par[2]);
+    return buildGym(`${par[1].trim()}(${par[2]})`, par[3].trim(), fixedWeight);
+  }
+
   let i = raw.search(/\d/);
   if (i <= 0) return null;
   // 「f10×20」「b10×20」のように数字の前に1文字付く書き方も、種目名ではなくセットとして扱う
@@ -750,11 +758,15 @@ function parseGym(text) {
   const name = raw.slice(0, i).trim();
   const setsText = raw.slice(i).trim();
   if (!name || !setsText) return null;
+  return buildGym(name, setsText, null);
+}
+
+function buildGym(name, setsText, fixedWeight) {
 
   const parts = setsText.split(/[,、，\n]|→|->/).map(x => x.trim()).filter(Boolean);
   // 自重種目は1回あたりの重量を決めてある
   const PER_REP = { 'fラウンジ(lr)': 20, 'bラウンジ(lr)': 30, 'バイシクル': 20, 'フロントスクワット': 30, 'インチワーム': 30, 'サイドスクワット': 40, 'レッグアップ': 35, 'クロバタ': 10, '体幹': 4.75 };
-  const perRep = PER_REP[name];
+  const perRep = fixedWeight !== null ? fixedWeight : PER_REP[name];
 
   let volume = 0, allWeighted = true;
   for (const part of parts) {
