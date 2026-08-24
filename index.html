@@ -76,6 +76,8 @@
     margin-bottom: 12px;
   }
   .kpi-btn { margin-left: auto; }
+  .head-actions { margin-left: auto; display: flex; align-items: baseline; gap: 14px; }
+  .head-actions .kpi-btn { margin-left: 0; }
   .date-nav { display: flex; align-items: center; gap: 4px; }
   .date-nav button {
     background: none; border: none; color: var(--text-2);
@@ -391,7 +393,10 @@
       <div class="date-label" id="date-label"></div>
       <button id="next-day" aria-label="次の日">›</button>
     </div>
-    <button class="kpi-btn" id="kpi-open"></button>
+    <div class="head-actions">
+      <button class="kpi-btn" id="food-list-open">食品リスト</button>
+      <button class="kpi-btn" id="kpi-open"></button>
+    </div>
   </div>
   <div class="kcal-row">
     <span class="kcal-now" id="kcal-now">0</span>
@@ -523,6 +528,12 @@
   <button class="tab" data-view="weekly">Weekly</button>
 </nav>
 </div>
+
+<dialog id="food-dialog">
+  <h2>食品リスト（低カロリー順）</h2>
+  <div style="max-height:60vh; overflow-y:auto"><table class="sleep-tbl" id="food-tbl"></table></div>
+  <div class="dialog-actions" style="margin-top:14px"><button class="btn-cancel" id="food-close">閉じる</button></div>
+</dialog>
 
 <dialog id="sleep-dialog">
   <h2>睡眠（過去14日）</h2>
@@ -1737,6 +1748,25 @@ document.getElementById('refresh-app').addEventListener('click', async () => {
   } catch (e) {}
   location.reload();
 });
+
+const foodDialog = document.getElementById('food-dialog');
+document.getElementById('food-list-open').addEventListener('click', () => {
+  const seen = new Set(), foods = [];
+  for (let i = store.entries.length - 1; i >= 0 && foods.length < 100; i--) {
+    const e = store.entries[i];
+    if (e.memo || seen.has(e.name)) continue;
+    seen.add(e.name);
+    const m = e.mult && e.mult !== 1 ? e.mult : 1;
+    foods.push({ name: e.name, k: Math.round(e.k / m), p: Math.round(e.p / m), f: Math.round(e.f / m), c: Math.round(e.c / m) });
+  }
+  foods.sort((a, b) => a.k - b.k);
+  document.getElementById('food-tbl').innerHTML =
+    `<tr><td>品名</td><td>kcal / P F C</td></tr>` +
+    foods.map(x => `<tr><td>${escapeHtml(x.name)}</td><td class="mono">${x.k}k  p${x.p} f${x.f} c${x.c}</td></tr>`).join('') ||
+    '<tr><td class="none">記録がありません</td></tr>';
+  foodDialog.showModal();
+});
+document.getElementById('food-close').addEventListener('click', () => foodDialog.close());
 
 const sleepDialog = document.getElementById('sleep-dialog');
 document.getElementById('w-log').addEventListener('click', e => {
