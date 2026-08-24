@@ -1317,7 +1317,12 @@ function render() {
 function recentFoods() {
   if (recentCache) return recentCache;
   const seen = new Set();
-  const out = store.pinnedFoods.map(f => ({ ...f, pinned: true }));
+  // 固定した食品は、最近その名前を記録した順（新しいものが左）に並べる
+  const lastIdx = new Map();
+  store.entries.forEach((e, i) => { if (!e.memo) lastIdx.set(e.name, i); });
+  const out = store.pinnedFoods
+    .map(f => ({ ...f, pinned: true }))
+    .sort((a, b) => (lastIdx.get(b.name) ?? -1) - (lastIdx.get(a.name) ?? -1));
   out.forEach(f => seen.add(f.name));
   for (let i = store.entries.length - 1; i >= 0 && out.length < 30; i--) {
     const e = store.entries[i];
