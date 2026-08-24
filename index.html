@@ -159,6 +159,9 @@
   .sleep-tbl td { padding: 7px 4px; border-bottom: 0.5px solid var(--border); }
   .sleep-tbl td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
   .sleep-tbl td.none { color: var(--text-3); }
+  .sleep-tbl td.slp-cell { width: 40%; padding: 7px 8px; }
+  .slp-bar { height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; }
+  .slp-bar > i { display: block; height: 100%; border-radius: 3px; }
   .wk-sleep-t { font-size: 26px; font-weight: 400; letter-spacing: -0.5px; line-height: 1.1; color: var(--text-3); margin-bottom: 14px; }
   .wk-sleep-v { font-size: 15px; font-weight: 600; white-space: nowrap; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
@@ -1784,7 +1787,10 @@ document.getElementById('w-log').addEventListener('click', e => {
     const wd = WEEKDAYS[new Date(y, m - 1, dd).getDay()];
     const min = byDay.get(d) || 0;
     const val = min ? `${Math.floor(min / 60)}時間 ${min % 60}分` : '—';
-    rows += `<tr><td>${m}/${dd}(${wd})</td><td class="${min ? '' : 'none'}">${val}</td></tr>`;
+    const pct = Math.min(100, min / 600 * 100);
+    const barColor = min >= 420 ? 'var(--text)' : '#EF9D9C';
+    const bar = min ? `<div class="slp-bar"><i style="width:${pct}%; background:${barColor}"></i></div>` : '<div class="slp-bar"></div>';
+    rows += `<tr><td>${m}/${dd}(${wd})</td><td class="slp-cell">${bar}</td><td class="${min ? '' : 'none'}">${val}</td></tr>`;
   }
   document.getElementById('sleep-tbl').innerHTML = rows;
   sleepDialog.showModal();
