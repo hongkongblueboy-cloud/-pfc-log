@@ -152,7 +152,11 @@
   #view-weekly .header-top { margin-bottom: 0; }
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-split { display: grid; grid-template-columns: 1fr 104px; gap: 8px; }
-  .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; }
+  .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; cursor: pointer; }
+  .sleep-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sleep-tbl td { padding: 7px 4px; border-bottom: 0.5px solid var(--border); }
+  .sleep-tbl td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .sleep-tbl td.none { color: var(--text-3); }
   .wk-sleep-t { font-size: 26px; font-weight: 400; letter-spacing: -0.5px; line-height: 1.1; color: var(--text-3); margin-bottom: 14px; }
   .wk-sleep-v { font-size: 15px; font-weight: 600; white-space: nowrap; }
   .wk-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
@@ -516,6 +520,12 @@
   <button class="tab" data-view="weekly">Weekly</button>
 </nav>
 </div>
+
+<dialog id="sleep-dialog">
+  <h2>睡眠（過去14日）</h2>
+  <table class="sleep-tbl" id="sleep-tbl"></table>
+  <div class="dialog-actions" style="margin-top:14px"><button class="btn-cancel" id="sleep-close">閉じる</button></div>
+</dialog>
 
 <dialog id="kpi-dialog">
   <h2>KPI設定</h2>
@@ -1015,7 +1025,7 @@ function renderWeekly() {
           <div><span class="wk-dot" style="background:#6A1B9A"></span>GYM<b>${sGym} / 100</b></div>
         </div>
       </div>
-      <div class="wk-card wk-sleep">
+      <div class="wk-card wk-sleep" id="wk-sleep-open">
         <div class="wk-sleep-t">Sleep</div>
         <div class="wk-sleep-v">${sleepDays ? `${sign} ${balH}時間${balM ? ' ' + balM + '分' : ''}` : '—'}</div>
       </div>
@@ -1711,6 +1721,25 @@ document.getElementById('refresh-app').addEventListener('click', async () => {
   } catch (e) {}
   location.reload();
 });
+
+const sleepDialog = document.getElementById('sleep-dialog');
+document.getElementById('w-log').addEventListener('click', e => {
+  if (!e.target.closest('#wk-sleep-open')) return;
+  const byDay = new Map();
+  for (const g of store.gym) { if (g.sleep) byDay.set(g.date, (byDay.get(g.date) || 0) + g.sleep); }
+  let rows = '';
+  for (let i = 13; i >= 0; i--) {
+    const d = shiftDate(todayStr(), -i);
+    const [y, m, dd] = d.split('-').map(Number);
+    const wd = WEEKDAYS[new Date(y, m - 1, dd).getDay()];
+    const min = byDay.get(d) || 0;
+    const val = min ? `${Math.floor(min / 60)}時間 ${min % 60}分` : '—';
+    rows += `<tr><td>${m}/${dd}(${wd})</td><td class="${min ? '' : 'none'}">${val}</td></tr>`;
+  }
+  document.getElementById('sleep-tbl').innerHTML = rows;
+  sleepDialog.showModal();
+});
+document.getElementById('sleep-close').addEventListener('click', () => sleepDialog.close());
 
 const dialog = document.getElementById('kpi-dialog');
 function openSettings() {
