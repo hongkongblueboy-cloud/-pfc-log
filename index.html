@@ -765,7 +765,7 @@ function buildGym(name, setsText, fixedWeight) {
 
   const parts = setsText.split(/[,、，\n]|→|->/).map(x => x.trim()).filter(Boolean);
   // 自重種目は1回あたりの重量を決めてある
-  const PER_REP = { 'fラウンジ(lr)': 20, 'bラウンジ(lr)': 30, 'バイシクル': 20, 'フロントスクワット': 30, 'インチワーム': 30, 'サイドスクワット': 40, 'レッグアップ': 35, 'クロバタ': 10, '体幹': 4.75 };
+  const PER_REP = { 'fラウンジ(lr)': 20, 'bラウンジ(lr)': 30, 'バイシクル': 20, 'フロントスクワット': 30, 'インチワーム': 60, 'サイドスクワット': 40, 'レッグアップ': 35, 'クロバタ': 10, '体幹': 4.75 };
   const perRep = fixedWeight !== null ? fixedWeight : PER_REP[name];
 
   let volume = 0, allWeighted = true;
