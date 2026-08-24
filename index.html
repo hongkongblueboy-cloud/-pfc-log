@@ -1133,7 +1133,7 @@ function renderGym() {
     log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「フライ 20×10→16×10」のように入力</div>`;
     return;
   }
-  log.innerHTML = list.map(g => `
+  log.innerHTML = list.slice().sort((a, b) => (a.time || '').localeCompare(b.time || '')).map(g => `
     <div class="entry">
       <span class="time">${g.time || ''}</span>
       <div class="body">
@@ -1274,7 +1274,7 @@ function render() {
     log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「サラダチキン 110k p24 f1 c0」のように入力</div>`;
     return;
   }
-  log.innerHTML = entries.map(e => `
+  log.innerHTML = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || '')).map(e => `
     <div class="entry">
       <span class="time edit" data-id="${e.id}">${e.time}</span>
       <div class="body">
