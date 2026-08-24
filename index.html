@@ -1112,7 +1112,8 @@ document.getElementById('gym-todo').addEventListener('click', e => {
   const chip = e.target.closest('.recent-chip');
   if (!chip) return;
   const el = document.getElementById('gym-input');
-  el.value = chip.textContent + ' ';
+  const cur = el.value.replace(/\s+$/, '');
+  el.value = (cur ? cur + '\n' : '') + chip.textContent + ' ';
   el.focus();
   fitInput(el);
 });
@@ -1603,38 +1604,29 @@ const gymHint = document.getElementById('gym-hint');
 const GYM_HINT = '種目名と重量×回数を並べて送信 — 区切りは , でも → でも可';
 
 function submitGym() {
-  const text = gymInput.value;
-  if (!text.trim()) return;
-  const parsed = parseGym(text);
-  if (!parsed) {
-    const n0 = new Date();
-    const memo = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
-      time: `${String(n0.getHours()).padStart(2, '0')}:${String(n0.getMinutes()).padStart(2, '0')}`,
-      name: text.trim(), sets: '', memo: true, count: 0, volume: 0, distance: 0 };
-    store.gym.push(memo);
-    const bk = gymByDate.get(memo.date);
-    if (bk) bk.push(memo); else gymByDate.set(memo.date, [memo]);
-    saveStore();
-    gymInput.value = ''; fitInput(gymInput);
-    gymHint.textContent = 'メモとして記録しました（集計には入りません）';
-    gymHint.classList.remove('error');
-    renderGym();
-    return;
-  }
+  const lines = gymInput.value.split('\n').map(l => l.replace(/[,、，\s]+$/, '').trim()).filter(Boolean);
+  if (!lines.length) return;
   const now = new Date();
-  const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
-    time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, ...parsed };
-  store.gym.push(item);
-  const bucket = gymByDate.get(item.date);
-  if (bucket) bucket.push(item);
-  else gymByDate.set(item.date, [item]);
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  let sets = 0, memos = 0;
+  lines.forEach((line, idx) => {
+    const parsed = parseGym(line);
+    const base = { id: Date.now() + '-' + idx + '-' + Math.random().toString(36).slice(2, 7), date: viewDate, time };
+    let item;
+    if (parsed) { item = { ...base, ...parsed }; sets += parsed.count; }
+    else { item = { ...base, name: line, sets: '', memo: true, count: 0, volume: 0, distance: 0 }; memos++; }
+    store.gym.push(item);
+    const bk = gymByDate.get(item.date);
+    if (bk) bk.push(item); else gymByDate.set(item.date, [item]);
+  });
   saveStore();
   gymInput.value = '';
   fitInput(gymInput);
-  gymHint.textContent = `${parsed.count}セットを記録しました`;
+  gymHint.textContent = (memos && !sets) ? 'メモとして記録しました（集計には入りません）' : `${lines.length}件を記録しました`;
   gymHint.classList.remove('error');
   renderGym();
 }
+
 
 document.getElementById('gym-send').addEventListener('click', submitGym);
 
