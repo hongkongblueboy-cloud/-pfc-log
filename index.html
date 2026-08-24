@@ -323,6 +323,9 @@
   #gym-todo { flex-wrap: wrap; overflow-x: visible; row-gap: 6px; }
   #gym-todo .recent-chip { background: var(--text-2); color: #fff; border-color: var(--text-2); }
   #gym-todo .recent-chip.sleep { background: var(--text); border-color: var(--text); }
+  #gym-todo .recent-chip.heat1 { background: #EF9D9C; border-color: #EF9D9C; }
+  #gym-todo .recent-chip.heat2 { background: #E24B4A; border-color: #E24B4A; }
+  #gym-todo .recent-chip.heat3 { background: #A32A2A; border-color: #A32A2A; }
   .recent-chip.pinned { background: var(--text-2); color: #fff; border-color: var(--text-2); }
   .recent-chip {
     flex-shrink: 0; padding: 6px 12px; border-radius: 16px;
@@ -1067,27 +1070,43 @@ const EXERCISES = ['睡眠','フリーベンチ','ウェイトスクワット','
 const SHORT_SPAN = ['トルソー(lr)','体幹','レッグアップ','バイシクル','ボール','インチワーム','クロバタ'];
 
 function renderGymTodo() {
-  const doneSince = span => {
-    const from = shiftDate(viewDate, span);
-    const done = [];
+  // その種目を最後にやってから何日経ったか（未実施は999）
+  const gapOf = name => {
+    let best = 999;
     for (const g of store.gym) {
-      if (!g.memo && g.date >= from && g.date <= viewDate) done.push(g.name);
+      if (g.memo || g.sleep || g.date > viewDate) continue;
+      if (g.name.includes(name) || name.includes(g.name)) {
+        const [ay, am, ad] = g.date.split('-').map(Number);
+        const [by, bm, bd] = viewDate.split('-').map(Number);
+        const gap = Math.round((new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad)) / 86400000);
+        if (gap < best) best = gap;
+      }
     }
-    return done;
+    return best;
   };
-  const done2 = doneSince(-2), done1 = doneSince(-1);
-  const missing = EXERCISES.filter(name => {
-    if (name === '睡眠') return true; // 睡眠は常に置いておく
-    if (name === '尻バイク') { // 当日やっていれば消す
-      return !doneSince(0).some(d => d.includes(name) || name.includes(d));
+  const items = [];
+  for (const name of EXERCISES) {
+    if (name === '睡眠') { items.push({ name, gap: 9999, heat: 0, pin: 'sleep' }); continue; }
+    const gap = gapOf(name);
+    let show = false, heat = 0;
+    if (name === '尻バイク') {
+      show = gap >= 1; // 当日やっていなければ表示（発火はしない）
+    } else if (SHORT_SPAN.includes(name)) {
+      show = gap >= 2;
+      heat = gap >= 5 ? 3 : gap >= 4 ? 2 : gap >= 3 ? 1 : 0;
+    } else {
+      show = gap >= 3;
+      heat = gap >= 6 ? 3 : gap >= 5 ? 2 : gap >= 4 ? 1 : 0;
     }
-    const done = SHORT_SPAN.includes(name) ? done1 : done2;
-    return !done.some(d => d.includes(name) || name.includes(d));
-  });
+    if (show) items.push({ name, gap, heat, pin: '' });
+  }
+  // 睡眠は先頭固定、あとは放置期間が長い順
+  items.sort((a, b) => (a.pin === 'sleep' ? -1 : b.pin === 'sleep' ? 1 : b.gap - a.gap));
   const row = document.getElementById('gym-todo');
-  row.style.display = missing.length ? 'flex' : 'none';
-  row.innerHTML = missing.map(n => `<button class="recent-chip${n === '睡眠' ? ' sleep' : ''}">${escapeHtml(n)}</button>`).join('');
+  row.style.display = items.length ? 'flex' : 'none';
+  row.innerHTML = items.map(it => `<button class="recent-chip${it.pin ? ' ' + it.pin : ''}${it.heat ? ' heat' + it.heat : ''}">${escapeHtml(it.name)}</button>`).join('');
 }
+
 
 document.getElementById('gym-todo').addEventListener('click', e => {
   const chip = e.target.closest('.recent-chip');
