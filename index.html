@@ -1335,10 +1335,6 @@ function render() {
 
   renderRecents();
   const log = document.getElementById('log');
-  if (!entries.length) {
-    log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「サラダチキン 110k p24 f1 c0」のように入力</div>`;
-    return;
-  }
   const sorted = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
   const CAL_REFS = [{ t: '12:00', k: 300 }, { t: '19:00', k: 1100 }];
   const refLine = r => `<div class="cal-ref"><i></i>${r.t}まで ${r.k.toLocaleString()}kcal<i></i></div>`;
@@ -1357,6 +1353,7 @@ function render() {
     out += entryHtml(e);
   }
   while (ri < CAL_REFS.length) out += refLine(CAL_REFS[ri++]);
+  if (!entries.length) out = `<div class="empty" style="padding:20px 0">まだ記録がありません<br>下の欄に「サラダチキン 110k p24 f1 c0」のように入力</div>` + out;
   log.innerHTML = out;
 }
 
