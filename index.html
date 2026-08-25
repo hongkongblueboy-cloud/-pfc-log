@@ -221,6 +221,8 @@
   .macro-note.over { color: var(--over); font-weight: 600; }
   .macro-note.ok { color: var(--accent-text); }
 
+  .cal-ref { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #7CC47F; margin: 2px 2px; }
+  .cal-ref > i { flex: 1; height: 1px; background: currentColor; opacity: 0.55; }
   main { flex: 1; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
   .empty {
     text-align: center; color: var(--text-3); font-size: 13px;
@@ -1333,7 +1335,10 @@ function render() {
     log.innerHTML = `<div class="empty">まだ記録がありません<br>下の欄に「サラダチキン 110k p24 f1 c0」のように入力</div>`;
     return;
   }
-  log.innerHTML = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || '')).map(e => `
+  const sorted = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  const CAL_REFS = [{ t: '12:00', k: 300 }, { t: '19:00', k: 1100 }];
+  const refLine = r => `<div class="cal-ref"><i></i>${r.t}まで ${r.k.toLocaleString()}kcal<i></i></div>`;
+  const entryHtml = e => `
     <div class="entry">
       <span class="time edit" data-id="${e.id}">${e.time}</span>
       <div class="body">
@@ -1341,7 +1346,14 @@ function render() {
         ${e.memo ? '' : `<span class="pfc mono">${fmt(e.k)}k${e.estimated ? '*' : ''}   p${fmt(e.p)}   f${fmt(e.f)}   c${fmt(e.c)}</span>`}
       </div>
       <button class="del" data-id="${e.id}" aria-label="削除">×</button>
-    </div>`).join('');
+    </div>`;
+  let out = '', ri = 0;
+  for (const e of sorted) {
+    while (ri < CAL_REFS.length && (e.time || '') >= CAL_REFS[ri].t) out += refLine(CAL_REFS[ri++]);
+    out += entryHtml(e);
+  }
+  while (ri < CAL_REFS.length) out += refLine(CAL_REFS[ri++]);
+  log.innerHTML = out;
 }
 
 function recentFoods() {
