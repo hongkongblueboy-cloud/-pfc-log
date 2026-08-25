@@ -137,7 +137,7 @@
   .tl-step.next .tl-what { color: var(--text); }
   #g-week { font-size: 16px; font-weight: 600; letter-spacing: 0; }
   #view-gym .kcal-goal, #view-gym .kcal-left { font-size: 16px; }
-  .g-stretch { margin-left: auto; font-size: 13px; font-weight: 300; color: var(--text-3); align-self: center; }
+  .g-stretch { margin-left: auto; font-size: 13px; font-weight: 300; color: var(--text-3); align-self: center; cursor: pointer; }
   #g-sleep { margin-left: 8px; color: var(--text-2); white-space: pre; min-width: 112px; text-align: right; font-size: 16px; font-weight: 400; }
   .gym-row2 { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
   .inline-gauge { flex: 1 1 auto; min-width: 32px; margin: 0 12px; align-self: center; }
@@ -156,6 +156,9 @@
   .w-monthly { margin-left: auto; font-size: 15px; color: var(--text-3); letter-spacing: 0; }
   .wk-split { display: grid; grid-template-columns: 1fr 104px; gap: 8px; }
   .wk-sleep { display: flex; flex-direction: column; justify-content: center; padding: 14px 12px; cursor: pointer; }
+  .st-body { font-size: 14px; line-height: 1.8; }
+  .st-title { font-weight: 600; margin-bottom: 8px; }
+  .st-gap { margin-top: 12px; }
   .sleep-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
   .sleep-tbl td { padding: 7px 4px; border-bottom: 0.5px solid var(--border); }
   .sleep-tbl td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
@@ -534,6 +537,12 @@
   <button class="tab" data-view="weekly">Weekly</button>
 </nav>
 </div>
+
+<dialog id="stretch-dialog">
+  <h2>体操メニュー</h2>
+  <div style="max-height:60vh; overflow-y:auto" class="st-body"><div class="st-title">■体操フル</div><div class="st-grp"><div>・腕広げ</div><div>・腕回し</div><div>・腰左右伸ばし</div><div>・腰前後伸ばし</div><div>・腰回し</div><div>・胸張り伸ばし</div></div><div class="st-grp st-gap"><div>・開脚肩入れ</div><div>・十字三頭筋伸ばし</div><div>・手首伸ばし</div><div>・頭上肩伸ばし</div></div><div class="st-grp st-gap"><div>・伸脚浅く</div><div>・伸脚深く</div><div>・左右屈指（膝パキ）</div><div>・屈伸</div><div>・ひざ回し</div><div>・前後開脚伸ばし（アキレス腱）</div><div>・逆アキレス腱</div><div>・足首回し</div></div><div class="st-grp st-gap"><div>・脚振り</div><div>・腕振り斜め後方</div><div>・前腿伸ばし</div><div>・伸脚浅く</div><div>・尻45度回し</div></div><div class="st-grp st-gap"><div>・首振り三方</div><div>・首回し</div><div>・逆土下座</div><div>・仰向けカカシ背伸ばし</div></div></div>
+  <div class="dialog-actions" style="margin-top:14px"><button class="btn-cancel" id="stretch-close">閉じる</button></div>
+</dialog>
 
 <dialog id="food-dialog">
   <h2>食品リスト（低カロリー順）</h2>
@@ -1757,6 +1766,10 @@ document.getElementById('refresh-app').addEventListener('click', async () => {
   } catch (e) {}
   location.reload();
 });
+
+const stretchDialog = document.getElementById('stretch-dialog');
+document.querySelector('.g-stretch').addEventListener('click', () => stretchDialog.showModal());
+document.getElementById('stretch-close').addEventListener('click', () => stretchDialog.close());
 
 const foodDialog = document.getElementById('food-dialog');
 document.getElementById('food-list-open').addEventListener('click', () => {
