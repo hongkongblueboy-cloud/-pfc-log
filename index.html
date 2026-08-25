@@ -1133,7 +1133,9 @@ function renderGymTodo() {
     if (show) items.push({ name, gap, heat, pin: '' });
   }
   // 睡眠は先頭固定、あとは放置期間が長い順
-  items.sort((a, b) => (a.pin === 'sleep' ? -1 : b.pin === 'sleep' ? 1 : b.gap - a.gap));
+  // 睡眠 → 濃い赤 → 赤 → 薄い赤 → グレー → 尻バイク の順
+  const rankOf = it => it.pin === 'sleep' ? 0 : it.name === '尻バイク' ? 5 : 4 - it.heat;
+  items.sort((a, b) => rankOf(a) - rankOf(b) || b.gap - a.gap);
   const row = document.getElementById('gym-todo');
   row.style.display = items.length ? 'flex' : 'none';
   row.innerHTML = items.map(it => `<button class="recent-chip${it.pin ? ' ' + it.pin : ''}${it.heat ? ' heat' + it.heat : ''}">${escapeHtml(it.name)}</button>`).join('');
