@@ -1791,12 +1791,19 @@ document.querySelector('#stretch-dialog .st-body').addEventListener('click', e =
   if (!it) return;
   const name = it.textContent.replace(/^・/, '').trim();
   const now = new Date();
-  const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate,
-    time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
-    name, sets: '', memo: true, count: 0, volume: 0, distance: 0 };
-  store.gym.push(item);
-  const bk = gymByDate.get(item.date);
-  if (bk) bk.push(item); else gymByDate.set(item.date, [item]);
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const bk = gymByDate.get(viewDate);
+  const last = bk && bk.length ? bk[bk.length - 1] : null;
+  // 直前の入力も体操メニューなら、下に足さず同じブロックにまとめる
+  if (last && last.stretch) {
+    last.name += '、' + name;
+    last.time = time;
+  } else {
+    const item = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), date: viewDate, time,
+      name, sets: '', memo: true, stretch: true, count: 0, volume: 0, distance: 0 };
+    store.gym.push(item);
+    if (bk) bk.push(item); else gymByDate.set(viewDate, [item]);
+  }
   saveStore();
   stretchDialog.close();
   renderGym();
