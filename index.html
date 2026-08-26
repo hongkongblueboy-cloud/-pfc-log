@@ -753,7 +753,10 @@ function fmtClock(v) {
 }
 
 function parseActivity(text) {
-  const tokens = text.trim().split(/\s+/).filter(Boolean);
+  let raw = text.trim().replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  // 「1050-1110」「10:50〜11:10」のように時刻同士がハイフン/波線/矢印で繋がっていたら空白に分ける
+  raw = raw.replace(/(\d)\s*[-–—~～〜ー→]\s*(?=\d)/g, '$1 ');
+  const tokens = raw.split(/[\s　]+/).filter(Boolean);
   const times = [], nameParts = [];
   for (const t of tokens) {
     const v = toMinutes(t);
