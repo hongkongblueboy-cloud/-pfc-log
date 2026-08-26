@@ -556,7 +556,7 @@
 </dialog>
 
 <dialog id="food-dialog">
-  <h2>食品リスト（低カロリー順）</h2>
+  <h2>食品リスト（P効率の高い順）</h2>
   <div style="max-height:60vh; overflow-y:auto"><table class="sleep-tbl" id="food-tbl"></table></div>
   <div class="dialog-actions" style="margin-top:14px"><button class="btn-cancel" id="food-close">閉じる</button></div>
 </dialog>
@@ -1842,7 +1842,9 @@ document.getElementById('food-list-open').addEventListener('click', () => {
     const m = e.mult && e.mult !== 1 ? e.mult : 1;
     foods.push({ name: e.name, k: Math.round(e.k / m), p: Math.round(e.p / m), f: Math.round(e.f / m), c: Math.round(e.c / m) });
   }
-  foods.sort((a, b) => a.k - b.k);
+  // P効率(p*4/kcal)の大きい順。並べ替えは小数2桁の精度で行う(表示は1桁)
+  const pEff2 = x => x.k > 0 ? Math.round(x.p * 4 / x.k * 100) / 100 : 0;
+  foods.sort((a, b) => pEff2(b) - pEff2(a));
   const head = `<thead><tr><th>食品名</th><th>P効率</th><th>kcal</th><th>P</th><th>F</th><th>C</th></tr></thead>`;
   const body = foods.length
     ? foods.map(x => `<tr><td>${escapeHtml(x.name)}</td><td>${(x.k > 0 ? x.p * 4 / x.k : 0).toFixed(1)}</td><td>${x.k}</td><td>${x.p}</td><td>${x.f}</td><td>${x.c}</td></tr>`).join('')
