@@ -161,6 +161,7 @@
   .st-gap { margin-top: 12px; }
   .st-item { cursor: pointer; }
   .st-item:active { color: var(--text-3); }
+  .st-item.done { color: var(--text-3); text-decoration: line-through; }
   .sleep-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
   .sleep-tbl td { padding: 7px 4px; border-bottom: 0.5px solid var(--border); }
   .sleep-tbl td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
@@ -1807,7 +1808,17 @@ document.getElementById('refresh-app').addEventListener('click', async () => {
 });
 
 const stretchDialog = document.getElementById('stretch-dialog');
-document.querySelector('.g-stretch').addEventListener('click', () => stretchDialog.showModal());
+// その日に完了した体操メニューを薄色+取消線にする(その日限り。×で消せば元に戻る)
+function markStretchDone() {
+  const done = new Set();
+  for (const g of (gymByDate.get(viewDate) || [])) {
+    if (g.stretch) g.name.split('、').forEach(n => done.add(n.trim()));
+  }
+  stretchDialog.querySelectorAll('.st-item').forEach(el => {
+    el.classList.toggle('done', done.has(el.textContent.replace(/^・/, '').trim()));
+  });
+}
+document.querySelector('.g-stretch').addEventListener('click', () => { markStretchDone(); stretchDialog.showModal(); });
 document.getElementById('stretch-close').addEventListener('click', () => stretchDialog.close());
 document.querySelector('#stretch-dialog .st-body').addEventListener('click', e => {
   const it = e.target.closest('.st-item');
