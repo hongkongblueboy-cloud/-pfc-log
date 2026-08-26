@@ -687,9 +687,21 @@ function gymFor(dateStr) {
 
 let store = loadStore();
 
-function todayStr(d = new Date()) {
+function todayStr(d) {
+  // 引数なし = 「今」を指す。1日の境目は朝5時なので、5時間戻して判定する(深夜0:00〜4:59は前日扱い)
+  if (d === undefined) d = new Date(Date.now() - 5 * 3600 * 1000);
   const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+// 深夜(0:00〜4:59)を24:00〜28:59として並べ替え・表示するための補助
+function nightMin(time) {
+  const [h, m] = (time || '0:0').split(':').map(Number);
+  return (h < 5 ? h + 24 : h) * 60 + (m || 0);
+}
+function nightTime(time) {
+  if (!time) return time || '';
+  const [h, m] = time.split(':').map(Number);
+  return String(h < 5 ? h + 24 : h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 let viewDate = todayStr();
 
@@ -1214,7 +1226,8 @@ function renderGym() {
 
 function renderRocket() {
   const goal = store.actGoal;
-  const list = actsFor(viewDate).slice().sort((a, b) => a.start - b.start);
+  const nightStart = a => a.start < 300 ? a.start + 1440 : a.start; // 深夜(5:00前)は末尾へ
+  const list = actsFor(viewDate).slice().sort((a, b) => nightStart(a) - nightStart(b));
   const total = list.reduce((sum, a) => sum + a.minutes, 0);
 
   document.getElementById('r-date-label').textContent = formatDateLabel(viewDate);
@@ -1249,14 +1262,17 @@ function renderRocket() {
     log.innerHTML = `<div class="empty"><b>この日はまだ0分</b><br>15分でも積めば、あとが軽くなる<br><span class="empty-hint">「書類作成 1000 1045」のように入力</span></div>`;
     return;
   }
-  log.innerHTML = list.map(a => `
+  log.innerHTML = list.map(a => {
+    const sh = a.start < 300 ? 1440 : 0; // 深夜開始なら24時以降の表記に揃える
+    return `
     <div class="entry">
       <div class="body">
         <span class="name">${escapeHtml(a.name)}</span>
-        <span class="pfc mono">${fmtClock(a.start)}-${fmtClock(a.end)}   ${a.minutes}分</span>
+        <span class="pfc mono">${fmtClock(a.start + sh)}-${fmtClock(a.end + sh)}   ${a.minutes}分</span>
       </div>
       <button class="del" data-id="${a.id}" aria-label="削除">×</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function daysUntil(dateStr) {
@@ -1338,12 +1354,12 @@ function render() {
 
   renderRecents();
   const log = document.getElementById('log');
-  const sorted = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+  const sorted = entries.slice().sort((a, b) => nightMin(a.time) - nightMin(b.time));
   const CAL_REFS = [{ t: '11:00', k: 400 }, { t: '18:30', k: 1100 }];
   const refLine = r => `<div class="cal-ref"><i></i>${r.t}まで ${r.k.toLocaleString()}kcal<i></i></div>`;
   const entryHtml = e => `
     <div class="entry">
-      <span class="time edit" data-id="${e.id}">${e.time}</span>
+      <span class="time edit" data-id="${e.id}">${nightTime(e.time)}</span>
       <div class="body">
         <span class="name">${escapeHtml(e.name)}${e.mult && e.mult !== 1 ? `<span class="mult-badge">×${e.mult}</span>` : ''}</span>
         ${e.memo ? '' : `<span class="pfc mono">${fmt(e.k)}k${e.estimated ? '*' : ''}   p${fmt(e.p)}   f${fmt(e.f)}   c${fmt(e.c)}</span>`}
@@ -1352,7 +1368,7 @@ function render() {
     </div>`;
   let out = '', ri = 0;
   for (const e of sorted) {
-    while (ri < CAL_REFS.length && (e.time || '') >= CAL_REFS[ri].t) out += refLine(CAL_REFS[ri++]);
+    while (ri < CAL_REFS.length && nightMin(e.time) >= nightMin(CAL_REFS[ri].t)) out += refLine(CAL_REFS[ri++]);
     out += entryHtml(e);
   }
   while (ri < CAL_REFS.length) out += refLine(CAL_REFS[ri++]);
