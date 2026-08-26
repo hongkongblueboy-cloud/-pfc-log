@@ -166,6 +166,13 @@
   .sleep-tbl td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
   .sleep-tbl td.none { color: var(--text-3); }
   .sleep-tbl td.slp-cell { width: 40%; padding: 7px 8px; }
+  /* 食品リスト: 5列・縦横の区切り線・見出し行を固定 */
+  #food-tbl { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+  #food-tbl th, #food-tbl td { border: 0.5px solid var(--border); padding: 5px 3px; text-align: center; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  #food-tbl th:first-child, #food-tbl td:first-child { width: 34%; text-align: left; padding-left: 6px; overflow-wrap: anywhere; word-break: break-word; }
+  #food-tbl th:not(:first-child), #food-tbl td:not(:first-child) { width: 16.5%; }
+  #food-tbl thead th { position: sticky; top: 0; z-index: 1; background: var(--row); font-weight: 600; color: var(--text-2); }
+  #food-tbl td.none { color: var(--text-3); text-align: center; }
   .slp-bar { height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; }
   .slp-bar > i { display: block; height: 100%; border-radius: 3px; }
   .wk-sleep-t { font-size: 26px; font-weight: 400; letter-spacing: -0.5px; line-height: 1.1; color: var(--text-3); margin-bottom: 14px; }
@@ -1836,10 +1843,11 @@ document.getElementById('food-list-open').addEventListener('click', () => {
     foods.push({ name: e.name, k: Math.round(e.k / m), p: Math.round(e.p / m), f: Math.round(e.f / m), c: Math.round(e.c / m) });
   }
   foods.sort((a, b) => a.k - b.k);
-  document.getElementById('food-tbl').innerHTML =
-    `<tr><td>品名</td><td>kcal / P F C</td></tr>` +
-    foods.map(x => `<tr><td>${escapeHtml(x.name)}</td><td class="mono">${x.k}k  p${x.p} f${x.f} c${x.c}</td></tr>`).join('') ||
-    '<tr><td class="none">記録がありません</td></tr>';
+  const head = `<thead><tr><th>食品名</th><th>kcal</th><th>P</th><th>F</th><th>C</th></tr></thead>`;
+  const body = foods.length
+    ? foods.map(x => `<tr><td>${escapeHtml(x.name)}</td><td>${x.k}</td><td>${x.p}</td><td>${x.f}</td><td>${x.c}</td></tr>`).join('')
+    : '<tr><td class="none" colspan="5">記録がありません</td></tr>';
+  document.getElementById('food-tbl').innerHTML = head + '<tbody>' + body + '</tbody>';
   foodDialog.showModal();
 });
 document.getElementById('food-close').addEventListener('click', () => foodDialog.close());
