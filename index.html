@@ -1339,7 +1339,7 @@ function render() {
   renderRecents();
   const log = document.getElementById('log');
   const sorted = entries.slice().sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-  const CAL_REFS = [{ t: '12:00', k: 300 }, { t: '19:00', k: 1100 }];
+  const CAL_REFS = [{ t: '11:00', k: 400 }, { t: '18:30', k: 1100 }];
   const refLine = r => `<div class="cal-ref"><i></i>${r.t}まで ${r.k.toLocaleString()}kcal<i></i></div>`;
   const entryHtml = e => `
     <div class="entry">
