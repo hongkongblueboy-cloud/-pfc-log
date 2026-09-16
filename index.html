@@ -355,6 +355,8 @@
     font-family: inherit; white-space: nowrap;
   }
   .recent-chip:active { transform: scale(0.97); }
+  #gym-todo .recent-chip { position: relative; overflow: visible; }
+  #gym-todo .chip-days { position: absolute; top: -5px; right: -3px; font-size: 10px; font-weight: 700; line-height: 1; color: #FFD400; text-shadow: 0 0 2px rgba(0,0,0,.55); pointer-events: none; }
   .update-bar {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     background: var(--card); border: 0.5px solid var(--border); border-radius: 14px;
@@ -1161,7 +1163,7 @@ function renderGymTodo() {
   items.sort((a, b) => rankOf(a) - rankOf(b) || b.gap - a.gap);
   const row = document.getElementById('gym-todo');
   row.style.display = items.length ? 'flex' : 'none';
-  row.innerHTML = items.map(it => `<button class="recent-chip${it.pin ? ' ' + it.pin : ''}${it.heat ? ' heat' + it.heat : ''}">${escapeHtml(it.name)}</button>`).join('');
+  row.innerHTML = items.map(it => `<button class="recent-chip${it.pin ? ' ' + it.pin : ''}${it.heat ? ' heat' + it.heat : ''}" data-name="${escapeHtml(it.name)}">${escapeHtml(it.name)}${it.pin !== 'sleep' && it.gap < 999 ? `<span class="chip-days">${it.gap}</span>` : ''}</button>`).join('');
 }
 
 
@@ -1170,7 +1172,7 @@ document.getElementById('gym-todo').addEventListener('click', e => {
   if (!chip) return;
   const el = document.getElementById('gym-input');
   const cur = el.value.replace(/\s+$/, '');
-  el.value = (cur ? cur + '\n' : '') + chip.textContent + ' ';
+  el.value = (cur ? cur + '\n' : '') + (chip.dataset.name || chip.textContent) + ' ';
   el.focus();
   fitInput(el);
 });
